@@ -72,11 +72,56 @@ app.get('/api/dashboard/metrics', validateJWT, async (req, res) => {
   res.status(200).json({ status: 'Dashboard accessible.' });
 });
 
+// ─── NeMo-Claw: Highlight Overlay Route ───
+// Receives highlight data and broadcasts to Electron desktop agent
+app.post('/api/highlight', (req, res) => {
+  const { file, line, summary } = req.body;
+  console.log(`🎯 [NeMo-Claw] Highlight broadcast: ${file}:${line}`);
+  io.emit('highlight_violation', { file, line, summary });
+  res.json({ status: 'broadcast', file, line });
+});
+
+// ─── NeMo-Claw: Execute Remediation Route ───
+// Spawns Python NeMo-Claw engine to open Slack, GitHub diff, and trigger highlight
+app.post('/api/nemo-claw/execute', (req, res) => {
+  const { remediationMeta } = req.body;
+  console.log('👔 [NeMo-Claw] Executing remediation for Senior Developer...');
+
+  const { spawn } = require('child_process');
+  const pythonCmd = process.platform === 'win32' ? '.\\venv\\Scripts\\python' : './venv/bin/python';
+
+  const proc = spawn(pythonCmd, ['-c', `
+import sys, json
+sys.path.insert(0, '.')
+from guardrails.actions import execute_from_k2_json
+result = execute_from_k2_json('${JSON.stringify(remediationMeta || {}).replace(/'/g, "\\'")}')
+print(json.dumps(result))
+  `], { cwd: __dirname });
+
+  let output = '';
+  proc.stdout.on('data', d => { output += d.toString(); });
+  proc.stderr.on('data', d => console.error('[NeMo-Claw Python]', d.toString()));
+  proc.on('close', () => {
+    console.log('[NeMo-Claw] Completed:', output.trim());
+  });
+
+  res.json({ status: 'executing', pid: proc.pid });
+});
+
+// ─── Senior Override Route ───
+// Triggered by Senior Developer typing "Show me the problem" in any surface
+app.post('/api/senior-override', (req, res) => {
+  const { remediationMeta } = req.body;
+  console.log('👔 [SeniorMode] Override activated — broadcasting to Desktop Agent...');
+  io.emit('senior_override', { remediationMeta });
+  res.json({ status: 'override_broadcast' });
+});
+
 // Socket.io Connection
 io.on('connection', (socket) => {
-    console.log('🔌 [Socket]: Chrome Extension connected:', socket.id);
+    console.log('🔌 [Socket]: Client connected:', socket.id);
     socket.on('disconnect', () => {
-        console.log('🔌 [Socket]: Chrome Extension disconnected');
+        console.log('🔌 [Socket]: Client disconnected');
     });
 });
 
