@@ -325,20 +325,94 @@ def health():
     return jsonify({"status": "ok", "version": "0.1"})
 
 
+def _seed_demo_findings():
+    """Write sample findings so /review has data on first run."""
+    if os.path.exists(FINDINGS_PATH):
+        return
+    findings = {
+        "pii_findings": [
+            {"type": "EMAIL_ADDRESS", "score": 0.95, "redacted": "al**************om",
+             "line_number": 12, "filename": "user_data_handler.py"},
+            {"type": "US_SSN", "score": 0.99, "redacted": "12*****89",
+             "line_number": 24, "filename": "user_data_handler.py"},
+            {"type": "AWS_KEY", "score": 0.99, "redacted": "AK**************LE",
+             "line_number": 3, "filename": "config.env"},
+        ],
+        "high_risk_files": [
+            {"file": "user_data_handler.py", "risk_level": "HIGH",
+             "risk_reasons": ["filename contains 'user'", "PII detected: EMAIL_ADDRESS, US_SSN"]},
+            {"file": "config.env", "risk_level": "HIGH",
+             "risk_reasons": ["high-risk extension: .env", "PII detected: AWS_KEY"]},
+        ],
+        "semantic_changes": [
+            {"file": "user_data_handler.py", "risk_reasons": ["filename contains 'user'"],
+             "added_lines": ['email = "alice@acme.com"', 'ssn = "123-45-6789"'],
+             "line_count": 47, "extension": ".py"},
+        ],
+        "commit_message": "minor updates",
+        "commit_accuracy": {
+            "score": 23,
+            "reasons": ["Message says 'minor' but 47 lines changed across 2 high-risk files",
+                         "Auth/user files modified but not mentioned in message"],
+        },
+        "change_summary": "Adds hardcoded email and SSN to user data handler, exposes AWS credentials in config",
+        "timestamp": "2026-03-28T18:30:00Z",
+        "total_files_changed": 5,
+        "high_risk_count": 2,
+    }
+    os.makedirs(os.path.dirname(FINDINGS_PATH) or "/tmp", exist_ok=True)
+    with open(FINDINGS_PATH, "w") as f:
+        json.dump(findings, f, indent=2)
+
+
+def _seed_demo_events():
+    """Insert sample audit events so /dashboard has data on first run."""
+    existing = get_events()
+    if existing:
+        return
+    log_event({"user": "alice", "manager": "bob", "source": "slack",
+               "decision": "BLOCKED", "pii_types": ["US_SSN", "PERSON"], "pii_count": 2,
+               "violation_types": ["SEC Reg FD"], "harvey_confidence": 0.92,
+               "original_hash": "abc123",
+               "scrubbed_content": "We should not tell investors about the Q3 revenue miss...",
+               "suggested_rewrite": "Please consult legal before discussing financial results.",
+               "sms_sent": True, "audit_id": "demo-001", "timestamp": "2026-03-28T14:32:00Z"})
+    log_event({"user": "alice", "manager": "bob", "source": "github",
+               "decision": "BLOCKED", "pii_types": ["EMAIL_ADDRESS", "AWS_KEY"], "pii_count": 3,
+               "violation_types": ["GDPR Art 5"], "harvey_confidence": 0.88,
+               "original_hash": "def456",
+               "scrubbed_content": "user_data_handler.py: hardcoded email in user model",
+               "sms_sent": True, "audit_id": "demo-002", "timestamp": "2026-03-28T15:10:00Z"})
+    log_event({"user": "bob", "manager": "carol", "source": "jira",
+               "decision": "APPROVED", "pii_types": ["PERSON"], "pii_count": 1,
+               "original_hash": "ghi789",
+               "scrubbed_content": "Ticket mentions [PERSON] in medical context",
+               "sms_sent": False, "audit_id": "demo-003", "timestamp": "2026-03-28T16:45:00Z"})
+    log_event({"user": "alice", "manager": "bob", "source": "teams",
+               "decision": "BLOCKED", "pii_types": ["CREDIT_CARD", "PERSON"], "pii_count": 2,
+               "violation_types": ["PCI DSS"], "harvey_confidence": 0.95,
+               "original_hash": "jkl012",
+               "scrubbed_content": "Shared [CREDIT_CARD] for [PERSON] in Teams channel",
+               "suggested_rewrite": "Use secure payment portal instead of sharing card numbers.",
+               "sms_sent": True, "audit_id": "demo-004", "timestamp": "2026-03-28T17:20:00Z"})
+
+
 def create_app():
     """Factory function for creating the Flask app."""
-    # Auto-seed demo data on startup if users table is empty
     try:
         seed_demo_data()
+        _seed_demo_events()
+        _seed_demo_findings()
     except Exception:
         pass
     return app
 
 
 if __name__ == "__main__":
-    # Auto-seed on direct run too
     try:
         seed_demo_data()
+        _seed_demo_events()
+        _seed_demo_findings()
     except Exception:
         pass
     port = int(os.environ.get("FLASK_PORT", 5001))
