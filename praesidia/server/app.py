@@ -22,6 +22,9 @@ FINDINGS_PATH = "/tmp/praesidia_findings.json"
 DECISION_PATH = "/tmp/praesidia_decision"
 PERSON3_URL = os.environ.get("PERSON3_ANALYZE_URL", "http://localhost:5002/analyze")
 
+# Node.js K2 Brain server (Person 1's reasoning engine)
+K2_BRAIN_URL = os.environ.get("K2_BRAIN_URL", "http://localhost:3000")
+
 
 def load_findings() -> dict:
     """Read findings from the temp file written by hook.py."""
@@ -34,8 +37,33 @@ def load_findings() -> dict:
         return json.load(f)
 
 
+def forward_to_k2_brain(scrubbed_content: str, user_id: str, surface: str = "github") -> dict:
+    """
+    Forward scrubbed content to the Node.js K2 Brain reasoning engine.
+    This is the bridge between Python PII scrubbing and Node.js legal reasoning.
+    """
+    import requests
+
+    url = f"{K2_BRAIN_URL}/api/{surface}/intercept"
+    payload = {
+        "action": scrubbed_content,
+        "userId": user_id,
+    }
+
+    try:
+        resp = requests.post(url, json=payload, timeout=30,
+                             headers={"Content-Type": "application/json",
+                                      "Authorization": "Bearer praesidia_internal"})
+        result = resp.json()
+        print(f"[K2 Brain] {surface} -> {url}: verdict={result.get('verdict', '?')}")
+        return result
+    except Exception as e:
+        print(f"[K2 Brain] Could not reach {url}: {e}")
+        return {"verdict": "WARN", "reasoning": f"K2 Brain unreachable: {e}"}
+
+
 def forward_to_person3(findings: dict, gate_result_dict: dict):
-    """POST findings to Person 3's /analyze endpoint."""
+    """POST findings to Person 3's /analyze endpoint AND K2 Brain."""
     import requests
 
     payload = {
@@ -55,11 +83,27 @@ def forward_to_person3(findings: dict, gate_result_dict: dict):
         "change_summary": findings.get("change_summary", ""),
     }
 
+    # Forward to Person 3's analyze endpoint
     try:
         resp = requests.post(PERSON3_URL, json=payload, timeout=10)
         print(f"[Person3] Forwarded to {PERSON3_URL}: {resp.status_code}")
     except Exception as e:
         print(f"[Person3] Could not reach {PERSON3_URL}: {e}")
+
+    # Also forward scrubbed content to Node.js K2 Brain for legal reasoning
+    scrubbed = findings.get("change_summary", "") or json.dumps(findings.get("semantic_changes", []))
+    k2_result = forward_to_k2_brain(
+        scrubbed_content=scrubbed,
+        user_id=gate_result_dict.get("user", "unknown"),
+        surface="github",
+    )
+
+    # Log K2 Brain verdict back to audit
+    if k2_result.get("verdict") == "DENY" and gate_result_dict.get("audit_id"):
+        update_event(gate_result_dict["audit_id"], {
+            "violation_types": [k2_result.get("reasoning", "K2 DENY")],
+            "harvey_response": json.dumps(k2_result),
+        })
 
 
 # --- Communication pipeline endpoint (Person 1 sends here) ---
@@ -93,27 +137,15 @@ def scan_message():
     needs_approval = requires_approval(findings)
 
     if not findings:
-        # Clean message — forward directly
-        payload = {
-            "source": data.get("source", "unknown"),
-            "author": data.get("author", "unknown"),
-            "manager": data.get("manager", ""),
-            "scrubbed_content": data["content"],
-            "original_hash": hashlib.sha256(data["content"].encode()).hexdigest(),
-            "pii_detected": [],
-            "pii_findings": [],
-            "human_approved": True,
-            "approval_timestamp": datetime.utcnow().isoformat() + "Z",
-            "audit_id": "",
-            "high_risk_files": [],
-            "semantic_changes": [],
-        }
-        try:
-            import requests as req
-            req.post(PERSON3_URL, json=payload, timeout=10)
-        except Exception:
-            pass
-        return jsonify({"status": "clean", "forwarded": True})
+        # Clean message — forward to K2 Brain for legal reasoning
+        source = data.get("source", "unknown")
+        k2_surface = source if source in ("slack", "jira", "github") else "slack"
+        k2_result = forward_to_k2_brain(
+            scrubbed_content=data["content"],
+            user_id=data.get("author", "unknown"),
+            surface=k2_surface,
+        )
+        return jsonify({"status": "clean", "forwarded": True, "k2_verdict": k2_result.get("verdict")})
 
     # Has findings — notify and return for approval gate
     pii_types = [f.entity_type for f in findings]

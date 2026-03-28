@@ -33,3 +33,5 @@ test_output.log
 dist/
 build/
 out/
+__pycache__/
+*.pyc
