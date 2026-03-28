@@ -43,9 +43,12 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Store tokens keyed by session ID
+  // Store user token keyed by session ID
+  // User token comes from authed_user.access_token (not top-level access_token)
+  const userToken = data.authed_user?.access_token || data.access_token;
+
   setTokens(state, {
-    bot_token: data.access_token,
+    bot_token: userToken,  // "bot_token" key reused but holds user token
     team_name: data.team?.name || "Workspace",
     team_id: data.team?.id || "",
     authed_user_id: data.authed_user?.id || "",

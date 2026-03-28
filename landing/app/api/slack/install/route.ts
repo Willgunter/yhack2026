@@ -5,13 +5,15 @@ const REDIRECT_URI = process.env.NEXT_PUBLIC_BASE_URL
   ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/slack/callback`
   : "https://praesidia.dev/api/slack/callback";
 
-const SCOPES = [
-  "chat:write",
+// User token scopes — acts AS the user, not as a bot
+const USER_SCOPES = [
   "channels:history",
   "groups:history",
-  "im:write",
+  "im:history",
+  "mpim:history",
+  "channels:read",
+  "groups:read",
   "users:read",
-  "app_mentions:read",
 ].join(",");
 
 export async function GET(req: NextRequest) {
@@ -27,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   const slackUrl = new URL("https://slack.com/oauth/v2/authorize");
   slackUrl.searchParams.set("client_id", SLACK_CLIENT_ID);
-  slackUrl.searchParams.set("scope", SCOPES);
+  slackUrl.searchParams.set("user_scope", USER_SCOPES);
   slackUrl.searchParams.set("redirect_uri", REDIRECT_URI);
   slackUrl.searchParams.set("state", session);
 
