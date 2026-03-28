@@ -1,0 +1,522 @@
+  • electron-builder  version=26.8.1 os=10.0.26200
+  • loaded configuration  file=package.json ("build" field)
+  • effective config  config=directories:
+  output: dist
+  buildResources: build
+appId: com.praesidia.engine
+productName: Praesidia Engine
+win:
+  target: nsis
+  icon: public/logo.png
+files:
+  - filter:
+      - '**/*'
+      - '!node_modules/**'
+      - node_modules/@anthropic-ai/sdk/**
+      - node_modules/express/**
+      - node_modules/cors/**
+      - node_modules/body-parser/**
+      - node_modules/multer/**
+      - node_modules/socket.io/**
+      - node_modules/dotenv/**
+asarUnpack:
+  - public/**/*
+
+  • no event listeners found  event=beforePack
+  • spawning        command=npm prefix -w cwd=C:\Users\seero\Desktop\praesidia
+  • exited          command=npm code=1 pid=7032
+  • executing @electron/rebuild  electronVersion=41.1.0 arch=x64 buildFromSource=false workspaceRoot=C:\Users\seero\Desktop\praesidia projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=41.1.0 appOutDir=dist\win-unpacked
+  • no custom electronDist provided, unpacking default Electron distribution
+  • spawning        command=C:\Users\seero\Desktop\praesidia\node_modules\app-builder-bin\win\x64\app-builder.exe unpack-electron --configuration [{"platform":"win32","arch":"x64","version":"41.1.0"}] --output C:\Users\seero\Desktop\praesidia\dist\win-unpacked --distMacOsAppName Electron.app
+  • map async       taskCount=2
+  • map async       taskCount=1
+  • map async       taskCount=75
+  • exited          command=app-builder.exe code=0 pid=38400
+  • no event listeners found  event=afterExtract
+  • searching for node modules  pm=npm searchDir=C:\Users\seero\Desktop\praesidia
+  • `npm list` returned non-zero exit code, but it MIGHT be expected (https://github.com/npm/npm/issues/17624). Check stderr for details.
+  • note: there was node module collector output on stderr  stderr=npm error code ELSPROBLEMS
+npm error invalid: @anthropic-ai/sdk@0.80.0 C:\Users\seero\Desktop\praesidia\node_modules\@anthropic-ai\sdk
+npm error missing: @azure/identity@^4.0.0, required by mem0ai@2.4.3
+npm error missing: @azure/search-documents@^12.0.0, required by mem0ai@2.4.3
+npm error missing: @cloudflare/workers-types@^4.20250504.0, required by mem0ai@2.4.3
+npm error missing: @google/genai@^1.2.0, required by mem0ai@2.4.3
+npm error missing: @langchain/core@^1.0.0, required by mem0ai@2.4.3
+npm error missing: @mistralai/mistralai@^1.5.2, required by mem0ai@2.4.3
+npm error missing: @qdrant/js-client-rest@1.13.0, required by mem0ai@2.4.3
+npm error missing: @types/jest@29.5.14, required by mem0ai@2.4.3
+npm error missing: @types/pg@8.11.0, required by mem0ai@2.4.3
+npm error missing: better-sqlite3@^12.6.2, required by mem0ai@2.4.3
+npm error missing: cloudflare@^4.2.0, required by mem0ai@2.4.3
+npm error missing: groq-sdk@0.3.0, required by mem0ai@2.4.3
+npm error missing: neo4j-driver@^5.28.1, required by mem0ai@2.4.3
+npm error missing: ollama@^0.5.14, required by mem0ai@2.4.3
+npm error missing: pg@8.11.3, required by mem0ai@2.4.3
+npm error missing: redis@^4.6.13, required by mem0ai@2.4.3
+npm error missing: react-dom@^18.2.0, required by @react-email/render@0.0.16
+npm error missing: react@^18.2.0, required by @react-email/render@0.0.16
+npm error A complete log of this run can be found in: C:\Users\seero\AppData\Local\npm-cache\_logs\2026-03-28T20_33_19_779Z-debug-0.log
+
+  • node modules collection complete  packageName=praesidia depCount=260
+  • collected node modules  pm=npm nodeModules=[{"name":"@anthropic-ai/sdk","version":"0.80.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@anthropic-ai\\sdk"},{"name":"@babel/runtime","version":"7.29.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@babel\\runtime"},{"name":"@google/stitch-sdk","version":"0.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@google\\stitch-sdk","dependencies":[{"name":"zod","version":"4.3.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@google\\stitch-sdk\\node_modules\\zod"}]},{"name":"@hono/node-server","version":"1.19.11","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@hono\\node-server"},{"name":"@img/colour","version":"1.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@img\\colour"},{"name":"@img/sharp-win32-x64","version":"0.34.5","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@img\\sharp-win32-x64"},{"name":"@isaacs/cliui","version":"8.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@isaacs\\cliui","dependencies":[{"name":"ansi-regex","version":"6.2.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ansi-regex"},{"name":"strip-ansi","version":"7.2.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\strip-ansi"}]},{"name":"@modelcontextprotocol/sdk","version":"1.28.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@modelcontextprotocol\\sdk","dependencies":[{"name":"jose","version":"6.2.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\jose"}]},{"name":"@octokit/auth-token","version":"6.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\auth-token"},{"name":"@octokit/core","version":"7.0.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\core"},{"name":"@octokit/endpoint","version":"11.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\endpoint"},{"name":"@octokit/graphql","version":"9.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\graphql"},{"name":"@octokit/openapi-types","version":"27.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\openapi-types"},{"name":"@octokit/plugin-paginate-rest","version":"14.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\plugin-paginate-rest"},{"name":"@octokit/plugin-request-log","version":"6.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\plugin-request-log"},{"name":"@octokit/plugin-rest-endpoint-methods","version":"17.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\plugin-rest-endpoint-methods"},{"name":"@octokit/request","version":"10.0.8","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\request"},{"name":"@octokit/request-error","version":"7.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\request-error"},{"name":"@octokit/rest","version":"22.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\rest"},{"name":"@octokit/types","version":"16.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@octokit\\types"},{"name":"@one-ini/wasm","version":"0.1.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@one-ini\\wasm"},{"name":"@pkgjs/parseargs","version":"0.11.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@pkgjs\\parseargs"},{"name":"@react-email/render","version":"0.0.16","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@react-email\\render"},{"name":"@selderee/plugin-htmlparser2","version":"0.11.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@selderee\\plugin-htmlparser2"},{"name":"@slack/logger","version":"4.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@slack\\logger"},{"name":"@slack/types","version":"2.20.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@slack\\types"},{"name":"@slack/web-api","version":"7.15.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@slack\\web-api"},{"name":"@socket.io/component-emitter","version":"3.1.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@socket.io\\component-emitter"},{"name":"@supabase/auth-js","version":"2.100.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@supabase\\auth-js"},{"name":"@supabase/functions-js","version":"2.100.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@supabase\\functions-js"},{"name":"@supabase/phoenix","version":"0.4.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@supabase\\phoenix"},{"name":"@supabase/postgrest-js","version":"2.100.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@supabase\\postgrest-js"},{"name":"@supabase/realtime-js","version":"2.100.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@supabase\\realtime-js","dependencies":[{"name":"ws","version":"8.20.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ws"}]},{"name":"@supabase/storage-js","version":"2.100.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@supabase\\storage-js"},{"name":"@supabase/supabase-js","version":"2.100.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@supabase\\supabase-js"},{"name":"@types/cors","version":"2.8.19","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@types\\cors"},{"name":"@types/node","version":"18.19.130","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@types\\node"},{"name":"@types/node-fetch","version":"2.6.13","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@types\\node-fetch"},{"name":"@types/retry","version":"0.12.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@types\\retry"},{"name":"@types/ws","version":"8.18.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@types\\ws"},{"name":"abbrev","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\abbrev"},{"name":"abort-controller","version":"3.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\abort-controller"},{"name":"accepts","version":"1.3.8","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io\\node_modules\\accepts","dependencies":[{"name":"mime-db","version":"1.52.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io\\node_modules\\mime-db"},{"name":"mime-types","version":"2.1.35","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io\\node_modules\\mime-types"},{"name":"negotiator","version":"0.6.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io\\node_modules\\negotiator"}]},{"name":"agent-base","version":"6.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\agent-base"},{"name":"agentkeepalive","version":"4.6.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\agentkeepalive"},{"name":"ajv","version":"8.18.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ajv"},{"name":"ajv-formats","version":"3.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ajv-formats"},{"name":"ansi-regex","version":"5.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\wrap-ansi-cjs\\node_modules\\ansi-regex"},{"name":"ansi-styles","version":"4.3.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\wrap-ansi-cjs\\node_modules\\ansi-styles"},{"name":"append-field","version":"1.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\append-field"},{"name":"asynckit","version":"0.4.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\asynckit"},{"name":"auth0","version":"5.5.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\auth0","dependencies":[{"name":"uuid","version":"11.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\auth0\\node_modules\\uuid"}]},{"name":"auth0-legacy","version":"4.37.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\auth0-legacy","dependencies":[{"name":"undici-types","version":"6.24.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\auth0-legacy\\node_modules\\undici-types"}]},{"name":"axios","version":"1.14.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\axios"},{"name":"balanced-match","version":"1.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\balanced-match"},{"name":"base64id","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\base64id"},{"name":"before-after-hook","version":"4.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\before-after-hook"},{"name":"body-parser","version":"2.2.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\body-parser"},{"name":"brace-expansion","version":"2.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\brace-expansion"},{"name":"buffer-equal-constant-time","version":"1.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\buffer-equal-constant-time"},{"name":"buffer-from","version":"1.1.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\buffer-from"},{"name":"busboy","version":"1.6.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\busboy"},{"name":"bytes","version":"3.1.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\bytes"},{"name":"call-bind-apply-helpers","version":"1.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\call-bind-apply-helpers"},{"name":"call-bound","version":"1.0.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\call-bound"},{"name":"color-convert","version":"2.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\color-convert"},{"name":"color-name","version":"1.1.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\color-name"},{"name":"combined-stream","version":"1.0.8","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\combined-stream"},{"name":"commander","version":"10.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\commander"},{"name":"concat-stream","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\concat-stream"},{"name":"config-chain","version":"1.1.13","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\config-chain"},{"name":"content-disposition","version":"1.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\content-disposition"},{"name":"content-type","version":"1.0.5","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\content-type"},{"name":"cookie","version":"0.7.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\cookie"},{"name":"cookie-signature","version":"1.2.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\cookie-signature"},{"name":"cors","version":"2.8.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\cors"},{"name":"cross-spawn","version":"7.0.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\cross-spawn"},{"name":"dayjs","version":"1.11.20","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\dayjs"},{"name":"debug","version":"4.4.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\debug"},{"name":"deepmerge","version":"4.3.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\deepmerge"},{"name":"delayed-stream","version":"1.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\delayed-stream"},{"name":"depd","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\depd"},{"name":"detect-libc","version":"2.1.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\detect-libc"},{"name":"dom-serializer","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\dom-serializer"},{"name":"domelementtype","version":"2.3.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\domelementtype"},{"name":"domhandler","version":"5.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\domhandler"},{"name":"domutils","version":"3.2.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\domutils"},{"name":"dotenv","version":"17.3.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\dotenv"},{"name":"dunder-proto","version":"1.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\dunder-proto"},{"name":"eastasianwidth","version":"0.2.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\eastasianwidth"},{"name":"ecdsa-sig-formatter","version":"1.0.11","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ecdsa-sig-formatter"},{"name":"editorconfig","version":"1.0.7","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\editorconfig"},{"name":"ee-first","version":"1.1.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ee-first"},{"name":"emoji-regex","version":"8.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\wrap-ansi-cjs\\node_modules\\emoji-regex"},{"name":"encodeurl","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\encodeurl"},{"name":"engine.io","version":"6.6.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io"},{"name":"engine.io-parser","version":"5.2.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io-parser"},{"name":"entities","version":"4.5.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\entities"},{"name":"es-define-property","version":"1.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\es-define-property"},{"name":"es-errors","version":"1.3.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\es-errors"},{"name":"es-object-atoms","version":"1.1.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\es-object-atoms"},{"name":"es-set-tostringtag","version":"2.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\es-set-tostringtag"},{"name":"escape-html","version":"1.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\escape-html"},{"name":"etag","version":"1.8.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\etag"},{"name":"event-target-shim","version":"5.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\event-target-shim"},{"name":"eventemitter3","version":"5.0.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\eventemitter3"},{"name":"eventsource","version":"3.0.7","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\eventsource"},{"name":"eventsource-parser","version":"3.0.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\eventsource-parser"},{"name":"express","version":"5.2.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\express","dependencies":[{"name":"accepts","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\accepts"}]},{"name":"express-oauth2-jwt-bearer","version":"1.7.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\express-oauth2-jwt-bearer"},{"name":"express-rate-limit","version":"8.3.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\express-rate-limit"},{"name":"fast-content-type-parse","version":"3.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\fast-content-type-parse"},{"name":"fast-deep-equal","version":"3.1.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\fast-deep-equal"},{"name":"fast-uri","version":"3.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\fast-uri"},{"name":"finalhandler","version":"2.1.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\finalhandler"},{"name":"follow-redirects","version":"1.15.11","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\follow-redirects"},{"name":"foreground-child","version":"3.3.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\foreground-child"},{"name":"form-data","version":"4.0.5","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\form-data","dependencies":[{"name":"mime-db","version":"1.52.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io\\node_modules\\mime-db"},{"name":"mime-types","version":"2.1.35","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io\\node_modules\\mime-types"}]},{"name":"form-data-encoder","version":"1.7.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\form-data-encoder"},{"name":"formdata-node","version":"4.4.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\formdata-node"},{"name":"forwarded","version":"0.2.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\forwarded"},{"name":"fresh","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\fresh"},{"name":"function-bind","version":"1.1.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\function-bind"},{"name":"get-intrinsic","version":"1.3.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\get-intrinsic"},{"name":"get-proto","version":"1.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\get-proto"},{"name":"glob","version":"10.5.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\glob"},{"name":"gopd","version":"1.2.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\gopd"},{"name":"has-symbols","version":"1.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\has-symbols"},{"name":"has-tostringtag","version":"1.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\has-tostringtag"},{"name":"hasown","version":"2.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\hasown"},{"name":"hono","version":"4.12.9","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\hono"},{"name":"html-to-text","version":"9.0.5","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\html-to-text"},{"name":"htmlparser2","version":"8.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\htmlparser2"},{"name":"http-errors","version":"2.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\http-errors"},{"name":"https-proxy-agent","version":"5.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\https-proxy-agent"},{"name":"humanize-ms","version":"1.2.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\humanize-ms"},{"name":"iceberg-js","version":"0.8.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\iceberg-js"},{"name":"iconv-lite","version":"0.7.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\iconv-lite"},{"name":"inherits","version":"2.0.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\inherits"},{"name":"ini","version":"1.3.8","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ini"},{"name":"ip-address","version":"10.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ip-address"},{"name":"ipaddr.js","version":"1.9.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ipaddr.js"},{"name":"is-electron","version":"2.2.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\is-electron"},{"name":"is-fullwidth-code-point","version":"3.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\is-fullwidth-code-point"},{"name":"is-promise","version":"4.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\is-promise"},{"name":"is-stream","version":"2.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\is-stream"},{"name":"isexe","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\isexe"},{"name":"jackspeak","version":"3.4.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\jackspeak"},{"name":"jose","version":"4.15.9","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\express-oauth2-jwt-bearer\\node_modules\\jose"},{"name":"js-beautify","version":"1.15.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\js-beautify"},{"name":"js-cookie","version":"3.0.5","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\js-cookie"},{"name":"json-schema-to-ts","version":"3.1.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\json-schema-to-ts"},{"name":"json-schema-traverse","version":"1.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\json-schema-traverse"},{"name":"json-schema-typed","version":"8.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\json-schema-typed"},{"name":"json-with-bigint","version":"3.5.8","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\json-with-bigint"},{"name":"jsonwebtoken","version":"9.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\jsonwebtoken"},{"name":"jwa","version":"2.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\jwa"},{"name":"jws","version":"4.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\jws"},{"name":"leac","version":"0.6.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\leac"},{"name":"lodash.includes","version":"4.3.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\lodash.includes"},{"name":"lodash.isboolean","version":"3.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\lodash.isboolean"},{"name":"lodash.isinteger","version":"4.0.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\lodash.isinteger"},{"name":"lodash.isnumber","version":"3.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\lodash.isnumber"},{"name":"lodash.isplainobject","version":"4.0.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\lodash.isplainobject"},{"name":"lodash.isstring","version":"4.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\lodash.isstring"},{"name":"lodash.once","version":"4.1.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\lodash.once"},{"name":"lru-cache","version":"10.4.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\lru-cache"},{"name":"math-intrinsics","version":"1.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\math-intrinsics"},{"name":"media-typer","version":"1.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\media-typer"},{"name":"mem0ai","version":"2.4.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\mem0ai","dependencies":[{"name":"axios","version":"1.13.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\mem0ai\\node_modules\\axios"},{"name":"proxy-from-env","version":"1.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\mem0ai\\node_modules\\proxy-from-env"}]},{"name":"merge-descriptors","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\merge-descriptors"},{"name":"mime-db","version":"1.54.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\mime-db"},{"name":"mime-types","version":"3.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\mime-types"},{"name":"minimatch","version":"9.0.9","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\minimatch"},{"name":"minipass","version":"7.1.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\minipass"},{"name":"ms","version":"2.1.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ms"},{"name":"multer","version":"2.1.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\multer","dependencies":[{"name":"media-typer","version":"0.3.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\multer\\node_modules\\media-typer"},{"name":"mime-db","version":"1.52.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io\\node_modules\\mime-db"},{"name":"mime-types","version":"2.1.35","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\engine.io\\node_modules\\mime-types"},{"name":"type-is","version":"1.6.18","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\multer\\node_modules\\type-is"}]},{"name":"negotiator","version":"1.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\negotiator"},{"name":"node-domexception","version":"1.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\node-domexception"},{"name":"node-fetch","version":"2.7.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\node-fetch"},{"name":"nopt","version":"7.2.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\nopt"},{"name":"object-assign","version":"4.1.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\object-assign"},{"name":"object-inspect","version":"1.13.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\object-inspect"},{"name":"on-finished","version":"2.4.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\on-finished"},{"name":"once","version":"1.4.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\once"},{"name":"openai","version":"4.104.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\openai"},{"name":"p-finally","version":"1.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\p-finally"},{"name":"p-queue","version":"6.6.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\p-queue","dependencies":[{"name":"eventemitter3","version":"4.0.7","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\p-queue\\node_modules\\eventemitter3"}]},{"name":"p-retry","version":"4.6.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\p-retry"},{"name":"p-timeout","version":"3.2.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\p-timeout"},{"name":"package-json-from-dist","version":"1.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\package-json-from-dist"},{"name":"parseley","version":"0.12.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\parseley"},{"name":"parseurl","version":"1.3.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\parseurl"},{"name":"path-key","version":"3.1.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\path-key"},{"name":"path-scurry","version":"1.11.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\path-scurry"},{"name":"path-to-regexp","version":"8.4.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\path-to-regexp"},{"name":"peberminta","version":"0.9.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\peberminta"},{"name":"pkce-challenge","version":"5.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\pkce-challenge"},{"name":"proto-list","version":"1.2.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\proto-list"},{"name":"proxy-addr","version":"2.0.7","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\proxy-addr"},{"name":"proxy-from-env","version":"2.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\proxy-from-env"},{"name":"qs","version":"6.15.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\qs"},{"name":"range-parser","version":"1.2.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\range-parser"},{"name":"raw-body","version":"3.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\raw-body"},{"name":"react-promise-suspense","version":"0.3.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\react-promise-suspense","dependencies":[{"name":"fast-deep-equal","version":"2.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\react-promise-suspense\\node_modules\\fast-deep-equal"}]},{"name":"readable-stream","version":"3.6.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\readable-stream"},{"name":"require-from-string","version":"2.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\require-from-string"},{"name":"resend","version":"3.5.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\resend"},{"name":"retry","version":"0.13.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\retry"},{"name":"router","version":"2.2.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\router"},{"name":"safe-buffer","version":"5.2.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\safe-buffer"},{"name":"safer-buffer","version":"2.1.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\safer-buffer"},{"name":"scmp","version":"2.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\scmp"},{"name":"selderee","version":"0.11.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\selderee"},{"name":"semver","version":"7.7.4","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\semver"},{"name":"send","version":"1.2.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\send"},{"name":"serve-static","version":"2.2.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\serve-static"},{"name":"setprototypeof","version":"1.2.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\setprototypeof"},{"name":"sharp","version":"0.34.5","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\sharp"},{"name":"shebang-command","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\shebang-command"},{"name":"shebang-regex","version":"3.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\shebang-regex"},{"name":"side-channel","version":"1.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\side-channel"},{"name":"side-channel-list","version":"1.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\side-channel-list"},{"name":"side-channel-map","version":"1.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\side-channel-map"},{"name":"side-channel-weakmap","version":"1.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\side-channel-weakmap"},{"name":"signal-exit","version":"4.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\signal-exit"},{"name":"socket.io","version":"4.8.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\socket.io"},{"name":"socket.io-adapter","version":"2.5.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\socket.io-adapter"},{"name":"socket.io-parser","version":"4.2.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\socket.io-parser"},{"name":"statuses","version":"2.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\statuses"},{"name":"streamsearch","version":"1.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\streamsearch"},{"name":"string_decoder","version":"1.3.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\string_decoder"},{"name":"string-width","version":"5.1.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\string-width","dependencies":[{"name":"ansi-regex","version":"6.2.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ansi-regex"},{"name":"emoji-regex","version":"9.2.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\emoji-regex"},{"name":"strip-ansi","version":"7.2.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\strip-ansi"}]},{"name":"string-width-cjs","version":"4.2.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\string-width-cjs"},{"name":"strip-ansi","version":"6.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\wrap-ansi-cjs\\node_modules\\strip-ansi"},{"name":"strip-ansi-cjs","version":"6.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\strip-ansi-cjs"},{"name":"toidentifier","version":"1.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\toidentifier"},{"name":"tr46","version":"0.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\tr46"},{"name":"ts-algebra","version":"2.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ts-algebra"},{"name":"tslib","version":"2.8.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\tslib"},{"name":"twilio","version":"5.13.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\twilio"},{"name":"type-is","version":"2.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\type-is"},{"name":"typedarray","version":"0.0.6","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\typedarray"},{"name":"undici-types","version":"5.26.5","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\undici-types"},{"name":"universal-user-agent","version":"7.0.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\universal-user-agent"},{"name":"unpipe","version":"1.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\unpipe"},{"name":"util-deprecate","version":"1.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\util-deprecate"},{"name":"uuid","version":"9.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\mem0ai\\node_modules\\uuid"},{"name":"vary","version":"1.1.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\vary"},{"name":"web-streams-polyfill","version":"4.0.0-beta.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\web-streams-polyfill"},{"name":"webidl-conversions","version":"3.0.1","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\webidl-conversions"},{"name":"whatwg-url","version":"5.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\whatwg-url"},{"name":"which","version":"2.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\which"},{"name":"wrap-ansi","version":"8.1.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\wrap-ansi","dependencies":[{"name":"ansi-regex","version":"6.2.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ansi-regex"},{"name":"ansi-styles","version":"6.2.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\ansi-styles"},{"name":"strip-ansi","version":"7.2.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\strip-ansi"}]},{"name":"wrap-ansi-cjs","version":"7.0.0","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\wrap-ansi-cjs","dependencies":[{"name":"string-width","version":"4.2.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\wrap-ansi-cjs\\node_modules\\string-width"}]},{"name":"wrappy","version":"1.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\wrappy"},{"name":"ws","version":"8.18.3","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\socket.io-adapter\\node_modules\\ws"},{"name":"xmlbuilder","version":"13.0.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\xmlbuilder"},{"name":"zod","version":"3.25.76","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\zod"},{"name":"zod-to-json-schema","version":"3.25.2","dir":"C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\zod-to-json-schema"}]
+  • collector stderr output  dependencies=["npm error code ELSPROBLEMS\nnpm error invalid: @anthropic-ai/sdk@0.80.0 C:\\Users\\seero\\Desktop\\praesidia\\node_modules\\@anthropic-ai\\sdk\nnpm error missing: @azure/identity@^4.0.0, required by mem0ai@2.4.3\nnpm error missing: @azure/search-documents@^12.0.0, required by mem0ai@2.4.3\nnpm error missing: @cloudflare/workers-types@^4.20250504.0, required by mem0ai@2.4.3\nnpm error missing: @google/genai@^1.2.0, required by mem0ai@2.4.3\nnpm error missing: @langchain/core@^1.0.0, required by mem0ai@2.4.3\nnpm error missing: @mistralai/mistralai@^1.5.2, required by mem0ai@2.4.3\nnpm error missing: @qdrant/js-client-rest@1.13.0, required by mem0ai@2.4.3\nnpm error missing: @types/jest@29.5.14, required by mem0ai@2.4.3\nnpm error missing: @types/pg@8.11.0, required by mem0ai@2.4.3\nnpm error missing: better-sqlite3@^12.6.2, required by mem0ai@2.4.3\nnpm error missing: cloudflare@^4.2.0, required by mem0ai@2.4.3\nnpm error missing: groq-sdk@0.3.0, required by mem0ai@2.4.3\nnpm error missing: neo4j-driver@^5.28.1, required by mem0ai@2.4.3\nnpm error missing: ollama@^0.5.14, required by mem0ai@2.4.3\nnpm error missing: pg@8.11.3, required by mem0ai@2.4.3\nnpm error missing: redis@^4.6.13, required by mem0ai@2.4.3\nnpm error missing: react-dom@^18.2.0, required by @react-email/render@0.0.16\nnpm error missing: react@^18.2.0, required by @react-email/render@0.0.16\nnpm error A complete log of this run can be found in: C:\\Users\\seero\\AppData\\Local\\npm-cache\\_logs\\2026-03-28T20_33_19_779Z-debug-0.log\n"]
+  • duplicate dependency references  dependencies=["ajv@8.18.0","cors@2.8.6","express@5.2.1","express@5.2.1","raw-body@3.0.2","@octokit/request@10.0.8","@octokit/types@16.0.0","@octokit/types@16.0.0","@octokit/types@16.0.0","@octokit/request-error@7.1.0","@octokit/types@16.0.0","@octokit/core@7.0.6","@octokit/types@16.0.0","@octokit/core@7.0.6","@octokit/core@7.0.6","@octokit/types@16.0.0","@types/node@18.19.130","axios@1.14.0","call-bind-apply-helpers@1.0.2","es-object-atoms@1.1.1","hasown@2.0.2","hasown@2.0.2","@types/node@18.19.130","form-data@4.0.5","call-bind-apply-helpers@1.0.2","get-intrinsic@1.3.0","get-intrinsic@1.3.0","call-bound@1.0.4","get-intrinsic@1.3.0","side-channel-map@1.0.1","http-errors@2.0.1","iconv-lite@0.7.2","mime-types@3.0.2","mime-types@3.0.2","body-parser@2.2.2","debug@4.4.3","debug@4.4.3","on-finished@2.4.1","http-errors@2.0.1","on-finished@2.4.1","qs@6.15.0","debug@4.4.3","debug@4.4.3","http-errors@2.0.1","mime-types@3.0.2","on-finished@2.4.1","send@1.2.1","type-is@2.0.1","@anthropic-ai/sdk@0.80.0","@supabase/supabase-js@2.100.1","form-data@4.0.5","@types/node@18.19.130","form-data@4.0.5","@types/node@18.19.130","selderee@0.11.0","domhandler@5.0.3","domhandler@5.0.3","dom-serializer@2.0.0","domhandler@5.0.3","cross-spawn@7.0.6","strip-ansi@7.2.0","strip-ansi@6.0.1","string-width@5.1.2","strip-ansi@7.2.0","minimatch@9.0.9","cors@2.8.6","debug@4.4.3","@types/node@18.19.130","@types/node@18.19.130","@types/ws@8.18.1","cors@2.8.6","debug@4.4.3","debug@4.4.3","debug@4.4.3","axios@1.14.0","debug@4.4.3","debug@4.4.3","qs@6.15.0"]
+  • identified module  dep=@anthropic-ai/sdk from=node_modules\@anthropic-ai\sdk to=dist\win-unpacked\resources\app\node_modules\@anthropic-ai\sdk filesCount=675
+  • identified module  dep=@babel/runtime from=node_modules\@babel\runtime to=dist\win-unpacked\resources\app\node_modules\@babel\runtime filesCount=0
+  • identified module  dep=@google/stitch-sdk from=node_modules\@google\stitch-sdk to=dist\win-unpacked\resources\app\node_modules\@google\stitch-sdk filesCount=0
+  • identified module  dep=zod from=node_modules\@google\stitch-sdk\node_modules\zod to=dist\win-unpacked\resources\app\node_modules\@google\stitch-sdk\node_modules\zod filesCount=0
+  • identified module  dep=@hono/node-server from=node_modules\@hono\node-server to=dist\win-unpacked\resources\app\node_modules\@hono\node-server filesCount=0
+  • identified module  dep=@img/colour from=node_modules\@img\colour to=dist\win-unpacked\resources\app\node_modules\@img\colour filesCount=0
+  • identified module  dep=@img/sharp-win32-x64 from=node_modules\@img\sharp-win32-x64 to=dist\win-unpacked\resources\app\node_modules\@img\sharp-win32-x64 filesCount=0
+  • identified module  dep=@isaacs/cliui from=node_modules\@isaacs\cliui to=dist\win-unpacked\resources\app\node_modules\@isaacs\cliui filesCount=0
+  • identified module  dep=ansi-regex from=node_modules\ansi-regex to=dist\win-unpacked\resources\app\node_modules\@isaacs\cliui\node_modules\ansi-regex filesCount=0
+  • identified module  dep=strip-ansi from=node_modules\strip-ansi to=dist\win-unpacked\resources\app\node_modules\@isaacs\cliui\node_modules\strip-ansi filesCount=0
+  • identified module  dep=@modelcontextprotocol/sdk from=node_modules\@modelcontextprotocol\sdk to=dist\win-unpacked\resources\app\node_modules\@modelcontextprotocol\sdk filesCount=0
+  • identified module  dep=jose from=node_modules\jose to=dist\win-unpacked\resources\app\node_modules\@modelcontextprotocol\sdk\node_modules\jose filesCount=0
+  • identified module  dep=@octokit/auth-token from=node_modules\@octokit\auth-token to=dist\win-unpacked\resources\app\node_modules\@octokit\auth-token filesCount=0
+  • identified module  dep=@octokit/core from=node_modules\@octokit\core to=dist\win-unpacked\resources\app\node_modules\@octokit\core filesCount=0
+  • identified module  dep=@octokit/endpoint from=node_modules\@octokit\endpoint to=dist\win-unpacked\resources\app\node_modules\@octokit\endpoint filesCount=0
+  • identified module  dep=@octokit/graphql from=node_modules\@octokit\graphql to=dist\win-unpacked\resources\app\node_modules\@octokit\graphql filesCount=0
+  • identified module  dep=@octokit/openapi-types from=node_modules\@octokit\openapi-types to=dist\win-unpacked\resources\app\node_modules\@octokit\openapi-types filesCount=0
+  • identified module  dep=@octokit/plugin-paginate-rest from=node_modules\@octokit\plugin-paginate-rest to=dist\win-unpacked\resources\app\node_modules\@octokit\plugin-paginate-rest filesCount=0
+  • identified module  dep=@octokit/plugin-request-log from=node_modules\@octokit\plugin-request-log to=dist\win-unpacked\resources\app\node_modules\@octokit\plugin-request-log filesCount=0
+  • identified module  dep=@octokit/plugin-rest-endpoint-methods from=node_modules\@octokit\plugin-rest-endpoint-methods to=dist\win-unpacked\resources\app\node_modules\@octokit\plugin-rest-endpoint-methods filesCount=0
+  • identified module  dep=@octokit/request from=node_modules\@octokit\request to=dist\win-unpacked\resources\app\node_modules\@octokit\request filesCount=0
+  • identified module  dep=@octokit/request-error from=node_modules\@octokit\request-error to=dist\win-unpacked\resources\app\node_modules\@octokit\request-error filesCount=0
+  • identified module  dep=@octokit/rest from=node_modules\@octokit\rest to=dist\win-unpacked\resources\app\node_modules\@octokit\rest filesCount=0
+  • identified module  dep=@octokit/types from=node_modules\@octokit\types to=dist\win-unpacked\resources\app\node_modules\@octokit\types filesCount=0
+  • identified module  dep=@one-ini/wasm from=node_modules\@one-ini\wasm to=dist\win-unpacked\resources\app\node_modules\@one-ini\wasm filesCount=0
+  • identified module  dep=@pkgjs/parseargs from=node_modules\@pkgjs\parseargs to=dist\win-unpacked\resources\app\node_modules\@pkgjs\parseargs filesCount=0
+  • identified module  dep=@react-email/render from=node_modules\@react-email\render to=dist\win-unpacked\resources\app\node_modules\@react-email\render filesCount=0
+  • identified module  dep=@selderee/plugin-htmlparser2 from=node_modules\@selderee\plugin-htmlparser2 to=dist\win-unpacked\resources\app\node_modules\@selderee\plugin-htmlparser2 filesCount=0
+  • identified module  dep=@slack/logger from=node_modules\@slack\logger to=dist\win-unpacked\resources\app\node_modules\@slack\logger filesCount=0
+  • identified module  dep=@slack/types from=node_modules\@slack\types to=dist\win-unpacked\resources\app\node_modules\@slack\types filesCount=0
+  • identified module  dep=@slack/web-api from=node_modules\@slack\web-api to=dist\win-unpacked\resources\app\node_modules\@slack\web-api filesCount=0
+  • identified module  dep=@socket.io/component-emitter from=node_modules\@socket.io\component-emitter to=dist\win-unpacked\resources\app\node_modules\@socket.io\component-emitter filesCount=0
+  • identified module  dep=@supabase/auth-js from=node_modules\@supabase\auth-js to=dist\win-unpacked\resources\app\node_modules\@supabase\auth-js filesCount=0
+  • identified module  dep=@supabase/functions-js from=node_modules\@supabase\functions-js to=dist\win-unpacked\resources\app\node_modules\@supabase\functions-js filesCount=0
+  • identified module  dep=@supabase/phoenix from=node_modules\@supabase\phoenix to=dist\win-unpacked\resources\app\node_modules\@supabase\phoenix filesCount=0
+  • identified module  dep=@supabase/postgrest-js from=node_modules\@supabase\postgrest-js to=dist\win-unpacked\resources\app\node_modules\@supabase\postgrest-js filesCount=0
+  • identified module  dep=@supabase/realtime-js from=node_modules\@supabase\realtime-js to=dist\win-unpacked\resources\app\node_modules\@supabase\realtime-js filesCount=0
+  • identified module  dep=ws from=node_modules\ws to=dist\win-unpacked\resources\app\node_modules\@supabase\realtime-js\node_modules\ws filesCount=0
+  • identified module  dep=@supabase/storage-js from=node_modules\@supabase\storage-js to=dist\win-unpacked\resources\app\node_modules\@supabase\storage-js filesCount=0
+  • identified module  dep=@supabase/supabase-js from=node_modules\@supabase\supabase-js to=dist\win-unpacked\resources\app\node_modules\@supabase\supabase-js filesCount=0
+  • identified module  dep=@types/cors from=node_modules\@types\cors to=dist\win-unpacked\resources\app\node_modules\@types\cors filesCount=0
+  • identified module  dep=@types/node from=node_modules\@types\node to=dist\win-unpacked\resources\app\node_modules\@types\node filesCount=0
+  • identified module  dep=@types/node-fetch from=node_modules\@types\node-fetch to=dist\win-unpacked\resources\app\node_modules\@types\node-fetch filesCount=0
+  • identified module  dep=@types/retry from=node_modules\@types\retry to=dist\win-unpacked\resources\app\node_modules\@types\retry filesCount=0
+  • identified module  dep=@types/ws from=node_modules\@types\ws to=dist\win-unpacked\resources\app\node_modules\@types\ws filesCount=0
+  • identified module  dep=abbrev from=node_modules\abbrev to=dist\win-unpacked\resources\app\node_modules\abbrev filesCount=0
+  • identified module  dep=abort-controller from=node_modules\abort-controller to=dist\win-unpacked\resources\app\node_modules\abort-controller filesCount=0
+  • identified module  dep=accepts from=node_modules\engine.io\node_modules\accepts to=dist\win-unpacked\resources\app\node_modules\accepts filesCount=0
+  • identified module  dep=mime-db from=node_modules\engine.io\node_modules\mime-db to=dist\win-unpacked\resources\app\node_modules\accepts\node_modules\mime-db filesCount=0
+  • identified module  dep=mime-types from=node_modules\engine.io\node_modules\mime-types to=dist\win-unpacked\resources\app\node_modules\accepts\node_modules\mime-types filesCount=0
+  • identified module  dep=negotiator from=node_modules\engine.io\node_modules\negotiator to=dist\win-unpacked\resources\app\node_modules\accepts\node_modules\negotiator filesCount=0
+  • identified module  dep=agent-base from=node_modules\agent-base to=dist\win-unpacked\resources\app\node_modules\agent-base filesCount=0
+  • identified module  dep=agentkeepalive from=node_modules\agentkeepalive to=dist\win-unpacked\resources\app\node_modules\agentkeepalive filesCount=0
+  • identified module  dep=ajv from=node_modules\ajv to=dist\win-unpacked\resources\app\node_modules\ajv filesCount=0
+  • identified module  dep=ajv-formats from=node_modules\ajv-formats to=dist\win-unpacked\resources\app\node_modules\ajv-formats filesCount=0
+  • identified module  dep=ansi-regex from=node_modules\wrap-ansi-cjs\node_modules\ansi-regex to=dist\win-unpacked\resources\app\node_modules\ansi-regex filesCount=0
+  • identified module  dep=ansi-styles from=node_modules\wrap-ansi-cjs\node_modules\ansi-styles to=dist\win-unpacked\resources\app\node_modules\ansi-styles filesCount=0
+  • identified module  dep=append-field from=node_modules\append-field to=dist\win-unpacked\resources\app\node_modules\append-field filesCount=0
+  • identified module  dep=asynckit from=node_modules\asynckit to=dist\win-unpacked\resources\app\node_modules\asynckit filesCount=0
+  • identified module  dep=auth0 from=node_modules\auth0 to=dist\win-unpacked\resources\app\node_modules\auth0 filesCount=0
+  • identified module  dep=uuid from=node_modules\auth0\node_modules\uuid to=dist\win-unpacked\resources\app\node_modules\auth0\node_modules\uuid filesCount=0
+  • identified module  dep=auth0-legacy from=node_modules\auth0-legacy to=dist\win-unpacked\resources\app\node_modules\auth0-legacy filesCount=0
+  • identified module  dep=undici-types from=node_modules\auth0-legacy\node_modules\undici-types to=dist\win-unpacked\resources\app\node_modules\auth0-legacy\node_modules\undici-types filesCount=0
+  • identified module  dep=axios from=node_modules\axios to=dist\win-unpacked\resources\app\node_modules\axios filesCount=0
+  • identified module  dep=balanced-match from=node_modules\balanced-match to=dist\win-unpacked\resources\app\node_modules\balanced-match filesCount=0
+  • identified module  dep=base64id from=node_modules\base64id to=dist\win-unpacked\resources\app\node_modules\base64id filesCount=0
+  • identified module  dep=before-after-hook from=node_modules\before-after-hook to=dist\win-unpacked\resources\app\node_modules\before-after-hook filesCount=0
+  • identified module  dep=body-parser from=node_modules\body-parser to=dist\win-unpacked\resources\app\node_modules\body-parser filesCount=9
+  • identified module  dep=brace-expansion from=node_modules\brace-expansion to=dist\win-unpacked\resources\app\node_modules\brace-expansion filesCount=0
+  • identified module  dep=buffer-equal-constant-time from=node_modules\buffer-equal-constant-time to=dist\win-unpacked\resources\app\node_modules\buffer-equal-constant-time filesCount=0
+  • identified module  dep=buffer-from from=node_modules\buffer-from to=dist\win-unpacked\resources\app\node_modules\buffer-from filesCount=0
+  • identified module  dep=busboy from=node_modules\busboy to=dist\win-unpacked\resources\app\node_modules\busboy filesCount=0
+  • identified module  dep=bytes from=node_modules\bytes to=dist\win-unpacked\resources\app\node_modules\bytes filesCount=0
+  • identified module  dep=call-bind-apply-helpers from=node_modules\call-bind-apply-helpers to=dist\win-unpacked\resources\app\node_modules\call-bind-apply-helpers filesCount=0
+  • identified module  dep=call-bound from=node_modules\call-bound to=dist\win-unpacked\resources\app\node_modules\call-bound filesCount=0
+  • identified module  dep=color-convert from=node_modules\color-convert to=dist\win-unpacked\resources\app\node_modules\color-convert filesCount=0
+  • identified module  dep=color-name from=node_modules\color-name to=dist\win-unpacked\resources\app\node_modules\color-name filesCount=0
+  • identified module  dep=combined-stream from=node_modules\combined-stream to=dist\win-unpacked\resources\app\node_modules\combined-stream filesCount=0
+  • identified module  dep=commander from=node_modules\commander to=dist\win-unpacked\resources\app\node_modules\commander filesCount=0
+  • identified module  dep=concat-stream from=node_modules\concat-stream to=dist\win-unpacked\resources\app\node_modules\concat-stream filesCount=0
+  • identified module  dep=config-chain from=node_modules\config-chain to=dist\win-unpacked\resources\app\node_modules\config-chain filesCount=0
+  • identified module  dep=content-disposition from=node_modules\content-disposition to=dist\win-unpacked\resources\app\node_modules\content-disposition filesCount=0
+  • identified module  dep=content-type from=node_modules\content-type to=dist\win-unpacked\resources\app\node_modules\content-type filesCount=0
+  • identified module  dep=cookie from=node_modules\cookie to=dist\win-unpacked\resources\app\node_modules\cookie filesCount=0
+  • identified module  dep=cookie-signature from=node_modules\cookie-signature to=dist\win-unpacked\resources\app\node_modules\cookie-signature filesCount=0
+  • identified module  dep=cors from=node_modules\cors to=dist\win-unpacked\resources\app\node_modules\cors filesCount=3
+  • identified module  dep=cross-spawn from=node_modules\cross-spawn to=dist\win-unpacked\resources\app\node_modules\cross-spawn filesCount=0
+  • identified module  dep=dayjs from=node_modules\dayjs to=dist\win-unpacked\resources\app\node_modules\dayjs filesCount=0
+  • identified module  dep=debug from=node_modules\debug to=dist\win-unpacked\resources\app\node_modules\debug filesCount=0
+  • identified module  dep=deepmerge from=node_modules\deepmerge to=dist\win-unpacked\resources\app\node_modules\deepmerge filesCount=0
+  • identified module  dep=delayed-stream from=node_modules\delayed-stream to=dist\win-unpacked\resources\app\node_modules\delayed-stream filesCount=0
+  • identified module  dep=depd from=node_modules\depd to=dist\win-unpacked\resources\app\node_modules\depd filesCount=0
+  • identified module  dep=detect-libc from=node_modules\detect-libc to=dist\win-unpacked\resources\app\node_modules\detect-libc filesCount=0
+  • identified module  dep=dom-serializer from=node_modules\dom-serializer to=dist\win-unpacked\resources\app\node_modules\dom-serializer filesCount=0
+  • identified module  dep=domelementtype from=node_modules\domelementtype to=dist\win-unpacked\resources\app\node_modules\domelementtype filesCount=0
+  • identified module  dep=domhandler from=node_modules\domhandler to=dist\win-unpacked\resources\app\node_modules\domhandler filesCount=0
+  • identified module  dep=domutils from=node_modules\domutils to=dist\win-unpacked\resources\app\node_modules\domutils filesCount=0
+  • identified module  dep=dotenv from=node_modules\dotenv to=dist\win-unpacked\resources\app\node_modules\dotenv filesCount=8
+  • identified module  dep=dunder-proto from=node_modules\dunder-proto to=dist\win-unpacked\resources\app\node_modules\dunder-proto filesCount=0
+  • identified module  dep=eastasianwidth from=node_modules\eastasianwidth to=dist\win-unpacked\resources\app\node_modules\eastasianwidth filesCount=0
+  • identified module  dep=ecdsa-sig-formatter from=node_modules\ecdsa-sig-formatter to=dist\win-unpacked\resources\app\node_modules\ecdsa-sig-formatter filesCount=0
+  • identified module  dep=editorconfig from=node_modules\editorconfig to=dist\win-unpacked\resources\app\node_modules\editorconfig filesCount=0
+  • identified module  dep=ee-first from=node_modules\ee-first to=dist\win-unpacked\resources\app\node_modules\ee-first filesCount=0
+  • identified module  dep=emoji-regex from=node_modules\wrap-ansi-cjs\node_modules\emoji-regex to=dist\win-unpacked\resources\app\node_modules\emoji-regex filesCount=0
+  • identified module  dep=encodeurl from=node_modules\encodeurl to=dist\win-unpacked\resources\app\node_modules\encodeurl filesCount=0
+  • identified module  dep=engine.io from=node_modules\engine.io to=dist\win-unpacked\resources\app\node_modules\engine.io filesCount=0
+  • identified module  dep=engine.io-parser from=node_modules\engine.io-parser to=dist\win-unpacked\resources\app\node_modules\engine.io-parser filesCount=0
+  • identified module  dep=entities from=node_modules\entities to=dist\win-unpacked\resources\app\node_modules\entities filesCount=0
+  • identified module  dep=es-define-property from=node_modules\es-define-property to=dist\win-unpacked\resources\app\node_modules\es-define-property filesCount=0
+  • identified module  dep=es-errors from=node_modules\es-errors to=dist\win-unpacked\resources\app\node_modules\es-errors filesCount=0
+  • identified module  dep=es-object-atoms from=node_modules\es-object-atoms to=dist\win-unpacked\resources\app\node_modules\es-object-atoms filesCount=0
+  • identified module  dep=es-set-tostringtag from=node_modules\es-set-tostringtag to=dist\win-unpacked\resources\app\node_modules\es-set-tostringtag filesCount=0
+  • identified module  dep=escape-html from=node_modules\escape-html to=dist\win-unpacked\resources\app\node_modules\escape-html filesCount=0
+  • identified module  dep=etag from=node_modules\etag to=dist\win-unpacked\resources\app\node_modules\etag filesCount=0
+  • identified module  dep=event-target-shim from=node_modules\event-target-shim to=dist\win-unpacked\resources\app\node_modules\event-target-shim filesCount=0
+  • identified module  dep=eventemitter3 from=node_modules\eventemitter3 to=dist\win-unpacked\resources\app\node_modules\eventemitter3 filesCount=0
+  • identified module  dep=eventsource from=node_modules\eventsource to=dist\win-unpacked\resources\app\node_modules\eventsource filesCount=0
+  • identified module  dep=eventsource-parser from=node_modules\eventsource-parser to=dist\win-unpacked\resources\app\node_modules\eventsource-parser filesCount=0
+  • identified module  dep=express from=node_modules\express to=dist\win-unpacked\resources\app\node_modules\express filesCount=9
+  • identified module  dep=accepts from=node_modules\accepts to=dist\win-unpacked\resources\app\node_modules\express\node_modules\accepts filesCount=4
+  • identified module  dep=express-oauth2-jwt-bearer from=node_modules\express-oauth2-jwt-bearer to=dist\win-unpacked\resources\app\node_modules\express-oauth2-jwt-bearer filesCount=0
+  • identified module  dep=express-rate-limit from=node_modules\express-rate-limit to=dist\win-unpacked\resources\app\node_modules\express-rate-limit filesCount=0
+  • identified module  dep=fast-content-type-parse from=node_modules\fast-content-type-parse to=dist\win-unpacked\resources\app\node_modules\fast-content-type-parse filesCount=0
+  • identified module  dep=fast-deep-equal from=node_modules\fast-deep-equal to=dist\win-unpacked\resources\app\node_modules\fast-deep-equal filesCount=0
+  • identified module  dep=fast-uri from=node_modules\fast-uri to=dist\win-unpacked\resources\app\node_modules\fast-uri filesCount=0
+  • identified module  dep=finalhandler from=node_modules\finalhandler to=dist\win-unpacked\resources\app\node_modules\finalhandler filesCount=0
+  • identified module  dep=follow-redirects from=node_modules\follow-redirects to=dist\win-unpacked\resources\app\node_modules\follow-redirects filesCount=0
+  • identified module  dep=foreground-child from=node_modules\foreground-child to=dist\win-unpacked\resources\app\node_modules\foreground-child filesCount=0
+  • identified module  dep=form-data from=node_modules\form-data to=dist\win-unpacked\resources\app\node_modules\form-data filesCount=0
+  • identified module  dep=mime-db from=node_modules\engine.io\node_modules\mime-db to=dist\win-unpacked\resources\app\node_modules\form-data\node_modules\mime-db filesCount=0
+  • identified module  dep=mime-types from=node_modules\engine.io\node_modules\mime-types to=dist\win-unpacked\resources\app\node_modules\form-data\node_modules\mime-types filesCount=0
+  • identified module  dep=form-data-encoder from=node_modules\form-data-encoder to=dist\win-unpacked\resources\app\node_modules\form-data-encoder filesCount=0
+  • identified module  dep=formdata-node from=node_modules\formdata-node to=dist\win-unpacked\resources\app\node_modules\formdata-node filesCount=0
+  • identified module  dep=forwarded from=node_modules\forwarded to=dist\win-unpacked\resources\app\node_modules\forwarded filesCount=0
+  • identified module  dep=fresh from=node_modules\fresh to=dist\win-unpacked\resources\app\node_modules\fresh filesCount=0
+  • identified module  dep=function-bind from=node_modules\function-bind to=dist\win-unpacked\resources\app\node_modules\function-bind filesCount=0
+  • identified module  dep=get-intrinsic from=node_modules\get-intrinsic to=dist\win-unpacked\resources\app\node_modules\get-intrinsic filesCount=0
+  • identified module  dep=get-proto from=node_modules\get-proto to=dist\win-unpacked\resources\app\node_modules\get-proto filesCount=0
+  • identified module  dep=glob from=node_modules\glob to=dist\win-unpacked\resources\app\node_modules\glob filesCount=0
+  • identified module  dep=gopd from=node_modules\gopd to=dist\win-unpacked\resources\app\node_modules\gopd filesCount=0
+  • identified module  dep=has-symbols from=node_modules\has-symbols to=dist\win-unpacked\resources\app\node_modules\has-symbols filesCount=0
+  • identified module  dep=has-tostringtag from=node_modules\has-tostringtag to=dist\win-unpacked\resources\app\node_modules\has-tostringtag filesCount=0
+  • identified module  dep=hasown from=node_modules\hasown to=dist\win-unpacked\resources\app\node_modules\hasown filesCount=0
+  • identified module  dep=hono from=node_modules\hono to=dist\win-unpacked\resources\app\node_modules\hono filesCount=0
+  • identified module  dep=html-to-text from=node_modules\html-to-text to=dist\win-unpacked\resources\app\node_modules\html-to-text filesCount=0
+  • identified module  dep=htmlparser2 from=node_modules\htmlparser2 to=dist\win-unpacked\resources\app\node_modules\htmlparser2 filesCount=0
+  • identified module  dep=http-errors from=node_modules\http-errors to=dist\win-unpacked\resources\app\node_modules\http-errors filesCount=0
+  • identified module  dep=https-proxy-agent from=node_modules\https-proxy-agent to=dist\win-unpacked\resources\app\node_modules\https-proxy-agent filesCount=0
+  • identified module  dep=humanize-ms from=node_modules\humanize-ms to=dist\win-unpacked\resources\app\node_modules\humanize-ms filesCount=0
+  • identified module  dep=iceberg-js from=node_modules\iceberg-js to=dist\win-unpacked\resources\app\node_modules\iceberg-js filesCount=0
+  • identified module  dep=iconv-lite from=node_modules\iconv-lite to=dist\win-unpacked\resources\app\node_modules\iconv-lite filesCount=0
+  • identified module  dep=inherits from=node_modules\inherits to=dist\win-unpacked\resources\app\node_modules\inherits filesCount=0
+  • identified module  dep=ini from=node_modules\ini to=dist\win-unpacked\resources\app\node_modules\ini filesCount=0
+  • identified module  dep=ip-address from=node_modules\ip-address to=dist\win-unpacked\resources\app\node_modules\ip-address filesCount=0
+  • identified module  dep=ipaddr.js from=node_modules\ipaddr.js to=dist\win-unpacked\resources\app\node_modules\ipaddr.js filesCount=0
+  • identified module  dep=is-electron from=node_modules\is-electron to=dist\win-unpacked\resources\app\node_modules\is-electron filesCount=0
+  • identified module  dep=is-fullwidth-code-point from=node_modules\is-fullwidth-code-point to=dist\win-unpacked\resources\app\node_modules\is-fullwidth-code-point filesCount=0
+  • identified module  dep=is-promise from=node_modules\is-promise to=dist\win-unpacked\resources\app\node_modules\is-promise filesCount=0
+  • identified module  dep=is-stream from=node_modules\is-stream to=dist\win-unpacked\resources\app\node_modules\is-stream filesCount=0
+  • identified module  dep=isexe from=node_modules\isexe to=dist\win-unpacked\resources\app\node_modules\isexe filesCount=0
+  • identified module  dep=jackspeak from=node_modules\jackspeak to=dist\win-unpacked\resources\app\node_modules\jackspeak filesCount=0
+  • identified module  dep=jose from=node_modules\express-oauth2-jwt-bearer\node_modules\jose to=dist\win-unpacked\resources\app\node_modules\jose filesCount=0
+  • identified module  dep=js-beautify from=node_modules\js-beautify to=dist\win-unpacked\resources\app\node_modules\js-beautify filesCount=0
+  • identified module  dep=js-cookie from=node_modules\js-cookie to=dist\win-unpacked\resources\app\node_modules\js-cookie filesCount=0
+  • identified module  dep=json-schema-to-ts from=node_modules\json-schema-to-ts to=dist\win-unpacked\resources\app\node_modules\json-schema-to-ts filesCount=0
+  • identified module  dep=json-schema-traverse from=node_modules\json-schema-traverse to=dist\win-unpacked\resources\app\node_modules\json-schema-traverse filesCount=0
+  • identified module  dep=json-schema-typed from=node_modules\json-schema-typed to=dist\win-unpacked\resources\app\node_modules\json-schema-typed filesCount=0
+  • identified module  dep=json-with-bigint from=node_modules\json-with-bigint to=dist\win-unpacked\resources\app\node_modules\json-with-bigint filesCount=0
+  • identified module  dep=jsonwebtoken from=node_modules\jsonwebtoken to=dist\win-unpacked\resources\app\node_modules\jsonwebtoken filesCount=0
+  • identified module  dep=jwa from=node_modules\jwa to=dist\win-unpacked\resources\app\node_modules\jwa filesCount=0
+  • identified module  dep=jws from=node_modules\jws to=dist\win-unpacked\resources\app\node_modules\jws filesCount=0
+  • identified module  dep=leac from=node_modules\leac to=dist\win-unpacked\resources\app\node_modules\leac filesCount=0
+  • identified module  dep=lodash.includes from=node_modules\lodash.includes to=dist\win-unpacked\resources\app\node_modules\lodash.includes filesCount=0
+  • identified module  dep=lodash.isboolean from=node_modules\lodash.isboolean to=dist\win-unpacked\resources\app\node_modules\lodash.isboolean filesCount=0
+  • identified module  dep=lodash.isinteger from=node_modules\lodash.isinteger to=dist\win-unpacked\resources\app\node_modules\lodash.isinteger filesCount=0
+  • identified module  dep=lodash.isnumber from=node_modules\lodash.isnumber to=dist\win-unpacked\resources\app\node_modules\lodash.isnumber filesCount=0
+  • identified module  dep=lodash.isplainobject from=node_modules\lodash.isplainobject to=dist\win-unpacked\resources\app\node_modules\lodash.isplainobject filesCount=0
+  • identified module  dep=lodash.isstring from=node_modules\lodash.isstring to=dist\win-unpacked\resources\app\node_modules\lodash.isstring filesCount=0
+  • identified module  dep=lodash.once from=node_modules\lodash.once to=dist\win-unpacked\resources\app\node_modules\lodash.once filesCount=0
+  • identified module  dep=lru-cache from=node_modules\lru-cache to=dist\win-unpacked\resources\app\node_modules\lru-cache filesCount=0
+  • identified module  dep=math-intrinsics from=node_modules\math-intrinsics to=dist\win-unpacked\resources\app\node_modules\math-intrinsics filesCount=0
+  • identified module  dep=media-typer from=node_modules\media-typer to=dist\win-unpacked\resources\app\node_modules\media-typer filesCount=0
+  • identified module  dep=mem0ai from=node_modules\mem0ai to=dist\win-unpacked\resources\app\node_modules\mem0ai filesCount=0
+  • identified module  dep=axios from=node_modules\mem0ai\node_modules\axios to=dist\win-unpacked\resources\app\node_modules\mem0ai\node_modules\axios filesCount=0
+  • identified module  dep=proxy-from-env from=node_modules\mem0ai\node_modules\proxy-from-env to=dist\win-unpacked\resources\app\node_modules\mem0ai\node_modules\proxy-from-env filesCount=0
+  • identified module  dep=merge-descriptors from=node_modules\merge-descriptors to=dist\win-unpacked\resources\app\node_modules\merge-descriptors filesCount=0
+  • identified module  dep=mime-db from=node_modules\mime-db to=dist\win-unpacked\resources\app\node_modules\mime-db filesCount=0
+  • identified module  dep=mime-types from=node_modules\mime-types to=dist\win-unpacked\resources\app\node_modules\mime-types filesCount=0
+  • identified module  dep=minimatch from=node_modules\minimatch to=dist\win-unpacked\resources\app\node_modules\minimatch filesCount=0
+  • identified module  dep=minipass from=node_modules\minipass to=dist\win-unpacked\resources\app\node_modules\minipass filesCount=0
+  • identified module  dep=ms from=node_modules\ms to=dist\win-unpacked\resources\app\node_modules\ms filesCount=0
+  • identified module  dep=multer from=node_modules\multer to=dist\win-unpacked\resources\app\node_modules\multer filesCount=10
+  • identified module  dep=media-typer from=node_modules\multer\node_modules\media-typer to=dist\win-unpacked\resources\app\node_modules\multer\node_modules\media-typer filesCount=4
+  • identified module  dep=mime-db from=node_modules\engine.io\node_modules\mime-db to=dist\win-unpacked\resources\app\node_modules\multer\node_modules\mime-db filesCount=5
+  • identified module  dep=mime-types from=node_modules\engine.io\node_modules\mime-types to=dist\win-unpacked\resources\app\node_modules\multer\node_modules\mime-types filesCount=4
+  • identified module  dep=type-is from=node_modules\multer\node_modules\type-is to=dist\win-unpacked\resources\app\node_modules\multer\node_modules\type-is filesCount=4
+  • identified module  dep=negotiator from=node_modules\negotiator to=dist\win-unpacked\resources\app\node_modules\negotiator filesCount=0
+  • identified module  dep=node-domexception from=node_modules\node-domexception to=dist\win-unpacked\resources\app\node_modules\node-domexception filesCount=0
+  • identified module  dep=node-fetch from=node_modules\node-fetch to=dist\win-unpacked\resources\app\node_modules\node-fetch filesCount=0
+  • identified module  dep=nopt from=node_modules\nopt to=dist\win-unpacked\resources\app\node_modules\nopt filesCount=0
+  • identified module  dep=object-assign from=node_modules\object-assign to=dist\win-unpacked\resources\app\node_modules\object-assign filesCount=0
+  • identified module  dep=object-inspect from=node_modules\object-inspect to=dist\win-unpacked\resources\app\node_modules\object-inspect filesCount=0
+  • identified module  dep=on-finished from=node_modules\on-finished to=dist\win-unpacked\resources\app\node_modules\on-finished filesCount=0
+  • identified module  dep=once from=node_modules\once to=dist\win-unpacked\resources\app\node_modules\once filesCount=0
+  • identified module  dep=openai from=node_modules\openai to=dist\win-unpacked\resources\app\node_modules\openai filesCount=0
+  • identified module  dep=p-finally from=node_modules\p-finally to=dist\win-unpacked\resources\app\node_modules\p-finally filesCount=0
+  • identified module  dep=p-queue from=node_modules\p-queue to=dist\win-unpacked\resources\app\node_modules\p-queue filesCount=0
+  • identified module  dep=eventemitter3 from=node_modules\p-queue\node_modules\eventemitter3 to=dist\win-unpacked\resources\app\node_modules\p-queue\node_modules\eventemitter3 filesCount=0
+  • identified module  dep=p-retry from=node_modules\p-retry to=dist\win-unpacked\resources\app\node_modules\p-retry filesCount=0
+  • identified module  dep=p-timeout from=node_modules\p-timeout to=dist\win-unpacked\resources\app\node_modules\p-timeout filesCount=0
+  • identified module  dep=package-json-from-dist from=node_modules\package-json-from-dist to=dist\win-unpacked\resources\app\node_modules\package-json-from-dist filesCount=0
+  • identified module  dep=parseley from=node_modules\parseley to=dist\win-unpacked\resources\app\node_modules\parseley filesCount=0
+  • identified module  dep=parseurl from=node_modules\parseurl to=dist\win-unpacked\resources\app\node_modules\parseurl filesCount=0
+  • identified module  dep=path-key from=node_modules\path-key to=dist\win-unpacked\resources\app\node_modules\path-key filesCount=0
+  • identified module  dep=path-scurry from=node_modules\path-scurry to=dist\win-unpacked\resources\app\node_modules\path-scurry filesCount=0
+  • identified module  dep=path-to-regexp from=node_modules\path-to-regexp to=dist\win-unpacked\resources\app\node_modules\path-to-regexp filesCount=0
+  • identified module  dep=peberminta from=node_modules\peberminta to=dist\win-unpacked\resources\app\node_modules\peberminta filesCount=0
+  • identified module  dep=pkce-challenge from=node_modules\pkce-challenge to=dist\win-unpacked\resources\app\node_modules\pkce-challenge filesCount=0
+  • identified module  dep=proto-list from=node_modules\proto-list to=dist\win-unpacked\resources\app\node_modules\proto-list filesCount=0
+  • identified module  dep=proxy-addr from=node_modules\proxy-addr to=dist\win-unpacked\resources\app\node_modules\proxy-addr filesCount=0
+  • identified module  dep=proxy-from-env from=node_modules\proxy-from-env to=dist\win-unpacked\resources\app\node_modules\proxy-from-env filesCount=0
+  • identified module  dep=qs from=node_modules\qs to=dist\win-unpacked\resources\app\node_modules\qs filesCount=0
+  • identified module  dep=range-parser from=node_modules\range-parser to=dist\win-unpacked\resources\app\node_modules\range-parser filesCount=0
+  • identified module  dep=raw-body from=node_modules\raw-body to=dist\win-unpacked\resources\app\node_modules\raw-body filesCount=0
+  • identified module  dep=react-promise-suspense from=node_modules\react-promise-suspense to=dist\win-unpacked\resources\app\node_modules\react-promise-suspense filesCount=0
+  • identified module  dep=fast-deep-equal from=node_modules\react-promise-suspense\node_modules\fast-deep-equal to=dist\win-unpacked\resources\app\node_modules\react-promise-suspense\node_modules\fast-deep-equal filesCount=0
+  • identified module  dep=readable-stream from=node_modules\readable-stream to=dist\win-unpacked\resources\app\node_modules\readable-stream filesCount=0
+  • identified module  dep=require-from-string from=node_modules\require-from-string to=dist\win-unpacked\resources\app\node_modules\require-from-string filesCount=0
+  • identified module  dep=resend from=node_modules\resend to=dist\win-unpacked\resources\app\node_modules\resend filesCount=0
+  • identified module  dep=retry from=node_modules\retry to=dist\win-unpacked\resources\app\node_modules\retry filesCount=0
+  • identified module  dep=router from=node_modules\router to=dist\win-unpacked\resources\app\node_modules\router filesCount=0
+  • identified module  dep=safe-buffer from=node_modules\safe-buffer to=dist\win-unpacked\resources\app\node_modules\safe-buffer filesCount=0
+  • identified module  dep=safer-buffer from=node_modules\safer-buffer to=dist\win-unpacked\resources\app\node_modules\safer-buffer filesCount=0
+  • identified module  dep=scmp from=node_modules\scmp to=dist\win-unpacked\resources\app\node_modules\scmp filesCount=0
+  • identified module  dep=selderee from=node_modules\selderee to=dist\win-unpacked\resources\app\node_modules\selderee filesCount=0
+  • identified module  dep=semver from=node_modules\semver to=dist\win-unpacked\resources\app\node_modules\semver filesCount=0
+  • identified module  dep=send from=node_modules\send to=dist\win-unpacked\resources\app\node_modules\send filesCount=0
+  • identified module  dep=serve-static from=node_modules\serve-static to=dist\win-unpacked\resources\app\node_modules\serve-static filesCount=0
+  • identified module  dep=setprototypeof from=node_modules\setprototypeof to=dist\win-unpacked\resources\app\node_modules\setprototypeof filesCount=0
+  • identified module  dep=sharp from=node_modules\sharp to=dist\win-unpacked\resources\app\node_modules\sharp filesCount=0
+  • identified module  dep=shebang-command from=node_modules\shebang-command to=dist\win-unpacked\resources\app\node_modules\shebang-command filesCount=0
+  • identified module  dep=shebang-regex from=node_modules\shebang-regex to=dist\win-unpacked\resources\app\node_modules\shebang-regex filesCount=0
+  • identified module  dep=side-channel from=node_modules\side-channel to=dist\win-unpacked\resources\app\node_modules\side-channel filesCount=0
+  • identified module  dep=side-channel-list from=node_modules\side-channel-list to=dist\win-unpacked\resources\app\node_modules\side-channel-list filesCount=0
+  • identified module  dep=side-channel-map from=node_modules\side-channel-map to=dist\win-unpacked\resources\app\node_modules\side-channel-map filesCount=0
+  • identified module  dep=side-channel-weakmap from=node_modules\side-channel-weakmap to=dist\win-unpacked\resources\app\node_modules\side-channel-weakmap filesCount=0
+  • identified module  dep=signal-exit from=node_modules\signal-exit to=dist\win-unpacked\resources\app\node_modules\signal-exit filesCount=0
+  • identified module  dep=socket.io from=node_modules\socket.io to=dist\win-unpacked\resources\app\node_modules\socket.io filesCount=20
+  • identified module  dep=socket.io-adapter from=node_modules\socket.io-adapter to=dist\win-unpacked\resources\app\node_modules\socket.io-adapter filesCount=0
+  • identified module  dep=socket.io-parser from=node_modules\socket.io-parser to=dist\win-unpacked\resources\app\node_modules\socket.io-parser filesCount=0
+  • identified module  dep=statuses from=node_modules\statuses to=dist\win-unpacked\resources\app\node_modules\statuses filesCount=0
+  • identified module  dep=streamsearch from=node_modules\streamsearch to=dist\win-unpacked\resources\app\node_modules\streamsearch filesCount=0
+  • identified module  dep=string_decoder from=node_modules\string_decoder to=dist\win-unpacked\resources\app\node_modules\string_decoder filesCount=0
+  • identified module  dep=string-width from=node_modules\string-width to=dist\win-unpacked\resources\app\node_modules\string-width filesCount=0
+  • identified module  dep=ansi-regex from=node_modules\ansi-regex to=dist\win-unpacked\resources\app\node_modules\string-width\node_modules\ansi-regex filesCount=0
+  • identified module  dep=emoji-regex from=node_modules\emoji-regex to=dist\win-unpacked\resources\app\node_modules\string-width\node_modules\emoji-regex filesCount=0
+  • identified module  dep=strip-ansi from=node_modules\strip-ansi to=dist\win-unpacked\resources\app\node_modules\string-width\node_modules\strip-ansi filesCount=0
+  • identified module  dep=string-width-cjs from=node_modules\string-width-cjs to=dist\win-unpacked\resources\app\node_modules\string-width-cjs filesCount=0
+  • identified module  dep=strip-ansi from=node_modules\wrap-ansi-cjs\node_modules\strip-ansi to=dist\win-unpacked\resources\app\node_modules\strip-ansi filesCount=0
+  • identified module  dep=strip-ansi-cjs from=node_modules\strip-ansi-cjs to=dist\win-unpacked\resources\app\node_modules\strip-ansi-cjs filesCount=0
+  • identified module  dep=toidentifier from=node_modules\toidentifier to=dist\win-unpacked\resources\app\node_modules\toidentifier filesCount=0
+  • identified module  dep=tr46 from=node_modules\tr46 to=dist\win-unpacked\resources\app\node_modules\tr46 filesCount=0
+  • identified module  dep=ts-algebra from=node_modules\ts-algebra to=dist\win-unpacked\resources\app\node_modules\ts-algebra filesCount=0
+  • identified module  dep=tslib from=node_modules\tslib to=dist\win-unpacked\resources\app\node_modules\tslib filesCount=0
+  • identified module  dep=twilio from=node_modules\twilio to=dist\win-unpacked\resources\app\node_modules\twilio filesCount=0
+  • identified module  dep=type-is from=node_modules\type-is to=dist\win-unpacked\resources\app\node_modules\type-is filesCount=0
+  • identified module  dep=typedarray from=node_modules\typedarray to=dist\win-unpacked\resources\app\node_modules\typedarray filesCount=0
+  • identified module  dep=undici-types from=node_modules\undici-types to=dist\win-unpacked\resources\app\node_modules\undici-types filesCount=0
+  • identified module  dep=universal-user-agent from=node_modules\universal-user-agent to=dist\win-unpacked\resources\app\node_modules\universal-user-agent filesCount=0
+  • identified module  dep=unpipe from=node_modules\unpipe to=dist\win-unpacked\resources\app\node_modules\unpipe filesCount=0
+  • identified module  dep=util-deprecate from=node_modules\util-deprecate to=dist\win-unpacked\resources\app\node_modules\util-deprecate filesCount=0
+  • identified module  dep=uuid from=node_modules\mem0ai\node_modules\uuid to=dist\win-unpacked\resources\app\node_modules\uuid filesCount=0
+  • identified module  dep=vary from=node_modules\vary to=dist\win-unpacked\resources\app\node_modules\vary filesCount=0
+  • identified module  dep=web-streams-polyfill from=node_modules\web-streams-polyfill to=dist\win-unpacked\resources\app\node_modules\web-streams-polyfill filesCount=0
+  • identified module  dep=webidl-conversions from=node_modules\webidl-conversions to=dist\win-unpacked\resources\app\node_modules\webidl-conversions filesCount=0
+  • identified module  dep=whatwg-url from=node_modules\whatwg-url to=dist\win-unpacked\resources\app\node_modules\whatwg-url filesCount=0
+  • identified module  dep=which from=node_modules\which to=dist\win-unpacked\resources\app\node_modules\which filesCount=0
+  • identified module  dep=wrap-ansi from=node_modules\wrap-ansi to=dist\win-unpacked\resources\app\node_modules\wrap-ansi filesCount=0
+  • identified module  dep=ansi-regex from=node_modules\ansi-regex to=dist\win-unpacked\resources\app\node_modules\wrap-ansi\node_modules\ansi-regex filesCount=0
+  • identified module  dep=ansi-styles from=node_modules\ansi-styles to=dist\win-unpacked\resources\app\node_modules\wrap-ansi\node_modules\ansi-styles filesCount=0
+  • identified module  dep=strip-ansi from=node_modules\strip-ansi to=dist\win-unpacked\resources\app\node_modules\wrap-ansi\node_modules\strip-ansi filesCount=0
+  • identified module  dep=wrap-ansi-cjs from=node_modules\wrap-ansi-cjs to=dist\win-unpacked\resources\app\node_modules\wrap-ansi-cjs filesCount=0
+  • identified module  dep=string-width from=node_modules\wrap-ansi-cjs\node_modules\string-width to=dist\win-unpacked\resources\app\node_modules\wrap-ansi-cjs\node_modules\string-width filesCount=0
+  • identified module  dep=wrappy from=node_modules\wrappy to=dist\win-unpacked\resources\app\node_modules\wrappy filesCount=0
+  • identified module  dep=ws from=node_modules\socket.io-adapter\node_modules\ws to=dist\win-unpacked\resources\app\node_modules\ws filesCount=0
+  • identified module  dep=xmlbuilder from=node_modules\xmlbuilder to=dist\win-unpacked\resources\app\node_modules\xmlbuilder filesCount=0
+  • identified module  dep=zod from=node_modules\zod to=dist\win-unpacked\resources\app\node_modules\zod filesCount=0
+  • identified module  dep=zod-to-json-schema from=node_modules\zod-to-json-schema to=dist\win-unpacked\resources\app\node_modules\zod-to-json-schema filesCount=0
+  • updating asar integrity executable resource  executablePath=dist\win-unpacked\Praesidia Engine.exe
+  • getPublishConfigsForUpdateInfo: no publishConfigs, detect using repository info
+  • calling getInfo  reason=owner or project is not specified explicitly provider=github owner=undefined project=undefined
+  • spawning        command=C:\Users\seero\Desktop\praesidia\node_modules\app-builder-bin\win\x64\app-builder.exe icon --format ico --root C:\Users\seero\Desktop\praesidia\build --root C:\Users\seero\Desktop\praesidia --out C:\Users\seero\Desktop\praesidia\dist\.icon-ico --input public/logo.png
+  • path doesn't exist  path=C:\Users\seero\Desktop\praesidia\build\public\logo.png
+  • path resolved   path=C:\Users\seero\Desktop\praesidia\public\logo.png outputFormat=ico
+  • exited          command=app-builder.exe code=0 pid=31272 out={"icons":[{"file":"C:\\Users\\seero\\Desktop\\praesidia\\dist\\.icon-ico\\icon.ico","size":256}],"isFallback":false}
+  • spawning        command=C:\Users\seero\Desktop\praesidia\node_modules\app-builder-bin\win\x64\app-builder.exe rcedit --args ["C:\\Users\\seero\\Desktop\\praesidia\\dist\\win-unpacked\\Praesidia Engine.exe","--set-version-string","FileDescription","Praesidia Engine","--set-version-string","ProductName","Praesidia Engine","--set-version-string","LegalCopyright","Copyright © 2026 Praesidia Team","--set-file-version","1.0.0","--set-p d4a07f0960ce243c837c94ef020cbca556208024347e225e55b396098e472644 (sha256 hash) (sha256 hash) Engine","--set-version-string","OriginalFilename","","--set-version-string","CompanyName","Praesidia Team","--set-icon","C:\\Users\\seero\\Desktop\\praesidia\\dist\\.icon-ico\\icon.ico"]
+  • computing effective URL  initialUrl=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z
+                             currentUrl=https://release-assets.githubusercontent.com/github-production-release-asset/65527128/f73f2200-5d53-11ea-8264-ddd345f11ee4?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-03-28T21%3A14%3A19Z&rscd=attachment%3B+filename%3DwinCodeSign-2.6.0.7z&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-03-28T20%3A13%3A20Z&ske=2026-03-28T21%3A14%3A19Z&sks=b&skv=2018-11-09&sig=BUgJcIfm6EaNF7OObn1kJRbQIuh5R8H75R%2FQeJ%2BgLVg%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NDczMDI0OCwibmJmIjoxNzc0NzI5OTQ4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.2JJvH6MJJBrOM_3VoqzstxcttMHsQ01X19hoRAX7als&response-content-disposition=attachment%3B%20filename%3DwinCodeSign-2.6.0.7z&response-content-type=application%2Foctet-stream
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z length=5635384 contentType=application/octet-stream
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+  • map async       taskCount=1
+  • download part   range=bytes=0-5635383 index=0
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=300ms
+  • execute command  command='C:\Users\seero\Desktop\praesidia\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\483154059.7z' '-oC:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\483154059'
+                     workingDirectory=C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign
+  ⨯ cannot execute  cause=exit status 2
+                    out=
+    7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+    
+    Scanning the drive for archives:
+    1 file, 5635384 bytes (5504 KiB)
+    
+    Extracting archive: C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\483154059.7z
+    --
+    Path = C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\483154059.7z
+    Type = 7z
+    Physical Size = 5635384
+    Headers Size = 1492
+    Method = LZMA2:24m LZMA:20 BCJ2
+    Solid = +
+    Blocks = 2
+    
+    
+    Sub items Errors: 2
+    
+    Archives with Errors: 1
+    
+    Sub items Errors: 2
+    
+                    errorOut=ERROR: Cannot create symbolic link : A required privilege is not held by the client. : C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\483154059\darwin\10.12\lib\libcrypto.dylib
+    ERROR: Cannot create symbolic link : A required privilege is not held by the client. : C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\483154059\darwin\10.12\lib\libssl.dylib
+    
+                    command='C:\Users\seero\Desktop\praesidia\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\483154059.7z' '-oC:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\483154059'
+                    workingDir=C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign
+  • exited          command=app-builder.exe code=2 pid=45224
+  • spawning        command=C:\Users\seero\Desktop\praesidia\node_modules\app-builder-bin\win\x64\app-builder.exe rcedit --args ["C:\\Users\\seero\\Desktop\\praesidia\\dist\\win-unpacked\\Praesidia Engine.exe","--set-version-string","FileDescription","Praesidia Engine","--set-version-string","ProductName","Praesidia Engine","--set-version-string","LegalCopyright","Copyright © 2026 Praesidia Team","--set-file-version","1.0.0","--set-p d4a07f0960ce243c837c94ef020cbca556208024347e225e55b396098e472644 (sha256 hash) (sha256 hash) Engine","--set-version-string","OriginalFilename","","--set-version-string","CompanyName","Praesidia Team","--set-icon","C:\\Users\\seero\\Desktop\\praesidia\\dist\\.icon-ico\\icon.ico"]
+  • computing effective URL  initialUrl=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z
+                             currentUrl=https://release-assets.githubusercontent.com/github-production-release-asset/65527128/f73f2200-5d53-11ea-8264-ddd345f11ee4?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-03-28T21%3A14%3A19Z&rscd=attachment%3B+filename%3DwinCodeSign-2.6.0.7z&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-03-28T20%3A13%3A20Z&ske=2026-03-28T21%3A14%3A19Z&sks=b&skv=2018-11-09&sig=BUgJcIfm6EaNF7OObn1kJRbQIuh5R8H75R%2FQeJ%2BgLVg%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NDczMDI0OCwibmJmIjoxNzc0NzI5OTQ4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.2JJvH6MJJBrOM_3VoqzstxcttMHsQ01X19hoRAX7als&response-content-disposition=attachment%3B%20filename%3DwinCodeSign-2.6.0.7z&response-content-type=application%2Foctet-stream
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z length=5635384 contentType=application/octet-stream
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+  • map async       taskCount=1
+  • download part   range=bytes=0-5635383 index=0
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=303ms
+  • execute command  command='C:\Users\seero\Desktop\praesidia\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\587143763.7z' '-oC:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\587143763'
+                     workingDirectory=C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign
+  ⨯ cannot execute  cause=exit status 2
+                    out=
+    7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+    
+    Scanning the drive for archives:
+    1 file, 5635384 bytes (5504 KiB)
+    
+    Extracting archive: C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\587143763.7z
+    --
+    Path = C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\587143763.7z
+    Type = 7z
+    Physical Size = 5635384
+    Headers Size = 1492
+    Method = LZMA2:24m LZMA:20 BCJ2
+    Solid = +
+    Blocks = 2
+    
+    
+    Sub items Errors: 2
+    
+    Archives with Errors: 1
+    
+    Sub items Errors: 2
+    
+                    errorOut=ERROR: Cannot create symbolic link : A required privilege is not held by the client. : C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\587143763\darwin\10.12\lib\libcrypto.dylib
+    ERROR: Cannot create symbolic link : A required privilege is not held by the client. : C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\587143763\darwin\10.12\lib\libssl.dylib
+    
+                    command='C:\Users\seero\Desktop\praesidia\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\587143763.7z' '-oC:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\587143763'
+                    workingDir=C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign
+  • exited          command=app-builder.exe code=2 pid=19568
+  • spawning        command=C:\Users\seero\Desktop\praesidia\node_modules\app-builder-bin\win\x64\app-builder.exe rcedit --args ["C:\\Users\\seero\\Desktop\\praesidia\\dist\\win-unpacked\\Praesidia Engine.exe","--set-version-string","FileDescription","Praesidia Engine","--set-version-string","ProductName","Praesidia Engine","--set-version-string","LegalCopyright","Copyright © 2026 Praesidia Team","--set-file-version","1.0.0","--set-p d4a07f0960ce243c837c94ef020cbca556208024347e225e55b396098e472644 (sha256 hash) (sha256 hash) Engine","--set-version-string","OriginalFilename","","--set-version-string","CompanyName","Praesidia Team","--set-icon","C:\\Users\\seero\\Desktop\\praesidia\\dist\\.icon-ico\\icon.ico"]
+  • computing effective URL  initialUrl=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z
+                             currentUrl=https://release-assets.githubusercontent.com/github-production-release-asset/65527128/f73f2200-5d53-11ea-8264-ddd345f11ee4?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-03-28T21%3A14%3A19Z&rscd=attachment%3B+filename%3DwinCodeSign-2.6.0.7z&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-03-28T20%3A13%3A20Z&ske=2026-03-28T21%3A14%3A19Z&sks=b&skv=2018-11-09&sig=BUgJcIfm6EaNF7OObn1kJRbQIuh5R8H75R%2FQeJ%2BgLVg%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NDczMDI0OCwibmJmIjoxNzc0NzI5OTQ4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.2JJvH6MJJBrOM_3VoqzstxcttMHsQ01X19hoRAX7als&response-content-disposition=attachment%3B%20filename%3DwinCodeSign-2.6.0.7z&response-content-type=application%2Foctet-stream
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z length=5635384 contentType=application/octet-stream
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+  • map async       taskCount=1
+  • download part   range=bytes=0-5635383 index=0
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=323ms
+  • execute command  command='C:\Users\seero\Desktop\praesidia\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\065444795.7z' '-oC:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\065444795'
+                     workingDirectory=C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign
+  ⨯ cannot execute  cause=exit status 2
+                    out=
+    7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+    
+    Scanning the drive for archives:
+    1 file, 5635384 bytes (5504 KiB)
+    
+    Extracting archive: C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\065444795.7z
+    --
+    Path = C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\065444795.7z
+    Type = 7z
+    Physical Size = 5635384
+    Headers Size = 1492
+    Method = LZMA2:24m LZMA:20 BCJ2
+    Solid = +
+    Blocks = 2
+    
+    
+    Sub items Errors: 2
+    
+    Archives with Errors: 1
+    
+    Sub items Errors: 2
+    
+                    errorOut=ERROR: Cannot create symbolic link : A required privilege is not held by the client. : C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\065444795\darwin\10.12\lib\libcrypto.dylib
+    ERROR: Cannot create symbolic link : A required privilege is not held by the client. : C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\065444795\darwin\10.12\lib\libssl.dylib
+    
+                    command='C:\Users\seero\Desktop\praesidia\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\065444795.7z' '-oC:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\065444795'
+                    workingDir=C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign
+  • exited          command=app-builder.exe code=2 pid=55396
+  • spawning        command=C:\Users\seero\Desktop\praesidia\node_modules\app-builder-bin\win\x64\app-builder.exe rcedit --args ["C:\\Users\\seero\\Desktop\\praesidia\\dist\\win-unpacked\\Praesidia Engine.exe","--set-version-string","FileDescription","Praesidia Engine","--set-version-string","ProductName","Praesidia Engine","--set-version-string","LegalCopyright","Copyright © 2026 Praesidia Team","--set-file-version","1.0.0","--set-p d4a07f0960ce243c837c94ef020cbca556208024347e225e55b396098e472644 (sha256 hash) (sha256 hash) Engine","--set-version-string","OriginalFilename","","--set-version-string","CompanyName","Praesidia Team","--set-icon","C:\\Users\\seero\\Desktop\\praesidia\\dist\\.icon-ico\\icon.ico"]
+  • computing effective URL  initialUrl=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z
+                             currentUrl=https://release-assets.githubusercontent.com/github-production-release-asset/65527128/f73f2200-5d53-11ea-8264-ddd345f11ee4?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-03-28T21%3A14%3A19Z&rscd=attachment%3B+filename%3DwinCodeSign-2.6.0.7z&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-03-28T20%3A13%3A20Z&ske=2026-03-28T21%3A14%3A19Z&sks=b&skv=2018-11-09&sig=BUgJcIfm6EaNF7OObn1kJRbQIuh5R8H75R%2FQeJ%2BgLVg%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NDczMDI0OCwibmJmIjoxNzc0NzI5OTQ4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.2JJvH6MJJBrOM_3VoqzstxcttMHsQ01X19hoRAX7als&response-content-disposition=attachment%3B%20filename%3DwinCodeSign-2.6.0.7z&response-content-type=application%2Foctet-stream
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z length=5635384 contentType=application/octet-stream
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+  • map async       taskCount=1
+  • download part   range=bytes=0-5635383 index=0
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=315ms
+  • execute command  command='C:\Users\seero\Desktop\praesidia\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\593039827.7z' '-oC:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\593039827'
+                     workingDirectory=C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign
+  ⨯ cannot execute  cause=exit status 2
+                    out=
+    7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+    
+    Scanning the drive for archives:
+    1 file, 5635384 bytes (5504 KiB)
+    
+    Extracting archive: C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\593039827.7z
+    --
+    Path = C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\593039827.7z
+    Type = 7z
+    Physical Size = 5635384
+    Headers Size = 1492
+    Method = LZMA2:24m LZMA:20 BCJ2
+    Solid = +
+    Blocks = 2
+    
+    
+    Sub items Errors: 2
+    
+    Archives with Errors: 1
+    
+    Sub items Errors: 2
+    
+                    errorOut=ERROR: Cannot create symbolic link : A required privilege is not held by the client. : C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\593039827\darwin\10.12\lib\libcrypto.dylib
+    ERROR: Cannot create symbolic link : A required privilege is not held by the client. : C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\593039827\darwin\10.12\lib\libssl.dylib
+    
+                    command='C:\Users\seero\Desktop\praesidia\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\593039827.7z' '-oC:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign\593039827'
+                    workingDir=C:\Users\seero\AppData\Local\electron-builder\Cache\winCodeSign
+  • exited          command=app-builder.exe code=2 pid=48096
+\n

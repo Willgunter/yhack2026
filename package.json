@@ -1,13 +1,42 @@
 {
   "name": "praesidia",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Praesidia AI Governance Engine",
+  "main": "main.js",
   "scripts": {
+    "start": "node index.js",
+    "electron": "electron .",
+    "build": "electron-builder --win",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "build": {
+    "appId": "com.praesidia.engine",
+    "productName": "Praesidia Engine",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "zip",
+      "icon": "public/logo.ico"
+    },
+    "files": [
+      "**/*",
+      ".env",
+      "!node_modules/**",
+      "node_modules/@anthropic-ai/sdk/**",
+      "node_modules/express/**",
+      "node_modules/cors/**",
+      "node_modules/body-parser/**",
+      "node_modules/multer/**",
+      "node_modules/socket.io/**",
+      "node_modules/dotenv/**"
+    ],
+    "asarUnpack": [
+      "public/**/*"
+    ]
+  },
   "keywords": [],
-  "author": "",
+  "author": "Praesidia Team",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
@@ -24,9 +53,16 @@
     "express": "^5.2.1",
     "express-oauth2-jwt-bearer": "^1.7.4",
     "mem0ai": "^2.4.3",
+    "multer": "^2.1.1",
     "resend": "^3.5.0",
     "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
     "twilio": "^5.13.1"
+  },
+  "devDependencies": {
+    "electron": "^41.1.0",
+    "electron-builder": "^26.8.1",
+    "electron-packager": "^17.1.2",
+    "png-to-ico": "^3.0.1"
   }
 }

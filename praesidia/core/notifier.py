@@ -83,6 +83,9 @@ def notify_violation(
     # 6. Platform-native DM
     results["platform_dm"] = _notify_platform_dm(user, event)
 
+    # 7. Resend email escalation
+    results["email"] = _notify_resend_email(user, manager, event)
+
     return results
 
 
@@ -243,6 +246,81 @@ def _notify_jira_comment(
         note=f"Detected: {types_str}. Jira API integration required for production.",
     )
     return False
+
+
+def _notify_resend_email(
+    user: Dict[str, Any],
+    manager: Optional[Dict[str, Any]],
+    event: ViolationEvent,
+) -> bool:
+    """Send compliance report email via Resend API."""
+    import urllib.request
+    import urllib.error
+
+    api_key = os.environ.get("RESEND_API_KEY", "")
+    if not api_key:
+        print("[Resend] No API key configured — skipping email.")
+        return False
+
+    types_str = ", ".join(set(event.pii_types)) if event.pii_types else "compliance issue"
+    user_email = user.get("email", "")
+    manager_email = manager.get("email", "") if manager else ""
+
+    # Send to manager (or user if no manager)
+    to_email = manager_email or user_email
+    if not to_email:
+        print("[Resend] No email address found — skipping.")
+        return False
+
+    html = f"""
+    <div style="font-family:Inter,sans-serif;background:#09090b;color:#e4e4e7;padding:32px;border-radius:12px;max-width:600px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #27272a">
+        <div style="width:40px;height:40px;background:#ef4444;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px">🛡️</div>
+        <div>
+          <h1 style="margin:0;font-size:20px;color:#fff">Praesidia Sentinel Alert</h1>
+          <p style="margin:0;font-size:13px;color:#71717a">Sovereign Governance Report</p>
+        </div>
+      </div>
+      <div style="background:#18181b;border:1px solid #27272a;border-radius:8px;padding:16px;margin-bottom:16px">
+        <p style="margin:0 0 8px;font-size:13px;color:#71717a">VIOLATION DETECTED</p>
+        <p style="margin:0;font-size:16px;color:#ef4444;font-weight:600">{types_str}</p>
+      </div>
+      <table style="width:100%;font-size:14px;color:#a1a1aa;border-collapse:collapse">
+        <tr><td style="padding:6px 0;color:#71717a">Source</td><td style="color:#e4e4e7;font-weight:500">{event.source}</td></tr>
+        <tr><td style="padding:6px 0;color:#71717a">Time</td><td style="color:#e4e4e7">{event.timestamp}</td></tr>
+        <tr><td style="padding:6px 0;color:#71717a">Author</td><td style="color:#e4e4e7">{user.get('display_name','Unknown')}</td></tr>
+        <tr><td style="padding:6px 0;color:#71717a">Audit ID</td><td style="color:#e4e4e7;font-family:monospace">{event.audit_id or 'N/A'}</td></tr>
+      </table>
+      {f'<div style="background:#1c1c1e;padding:12px;border-radius:6px;margin-top:16px;font-size:13px;color:#a1a1aa">{event.detail}</div>' if event.detail else ''}
+      <p style="margin-top:24px;font-size:12px;color:#52525b">This is an automated report from Praesidia Sovereign Sentinel.</p>
+    </div>
+    """
+
+    import json
+    payload = json.dumps({
+        "from": "Praesidia Sentinel <onboarding@resend.dev>",
+        "to": [to_email],
+        "subject": f"[PSI Alert] {types_str} detected via {event.source}",
+        "html": html,
+    }).encode("utf-8")
+
+    try:
+        req = urllib.request.Request(
+            "https://api.resend.com/emails",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            result = json.loads(resp.read())
+            print(f"[Resend] Email sent to {to_email} — ID: {result.get('id')}")
+            return True
+    except Exception as e:
+        print(f"[Resend] Email failed: {e}")
+        return False
 
 
 def _print_notification(

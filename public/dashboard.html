@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praesidia Engine - AI Governance OS</title>
+    <!-- Use Tailwind via CDN for rapid UI replication of the Stitch design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            sidebar: '#1A1D24',
+                            bg: '#14151B',
+                            card: '#1F222B',
+                            accent: '#4B88E5',
+                            text: '#E2E8F0',
+                            muted: '#94A3B8',
+                            border: '#2E3340',
+                            critical: '#E11D48',
+                            safe: '#34D399',
+                            warning: '#F59E0B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #14151B; color: #E2E8F0; }
+        .glass-panel {
+            background: rgba(31, 34, 43, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .nav-item {
+            transition: all 0.2s;
+            border-left: 2px solid transparent;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            border-left-color: #4B88E5;
+            background: linear-gradient(90deg, rgba(75, 136, 229, 0.1) 0%, transparent 100%);
+            color: #fff;
+        }
+        /* Top Nav */
+        .top-nav-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .top-nav-item.active {
+            color: #fff;
+            border-bottom: 2px solid #4B88E5;
+            padding-bottom: 4px;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2E3340; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4B88E5; }
+
+        /* Drag & Drop Zone */
+        .drop-zone {
+            border: 2px dashed #4B88E5;
+            background: rgba(75, 136, 229, 0.05);
+            transition: all 0.2s;
+        }
+        .drop-zone.dragover {
+            background: rgba(75, 136, 229, 0.15);
+            border-color: #60A5FA;
+            transform: scale(1.02);
+        }
+
+        /* View Containers */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Overlay */
+        #login-overlay {
+            backdrop-filter: blur(15px);
+            background-color: rgba(20, 21, 27, 0.85);
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden font-sans antialiased text-sm">
+
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="glass-panel p-8 rounded-xl w-96 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-brand-accent/20 rounded-bl-full -z-10"></div>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shadow-lg shadow-brand-accent/30 ring-2 ring-brand-accent/50 bg-black">
+                    <img src="logo.png" alt="Praesidia Logo" class="object-cover w-full h-full">
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Praesidia</h2>
+                    <p class="text-xs text-brand-muted uppercase tracking-widest">Authentication</p>
+                </div>
+            </div>
+            
+            <form id="login-form" autocomplete="off">
+                <div class="mb-4">
+                    <label class="block text-xs text-brand-muted uppercase mb-1">Commander ID</label>
+                    <input type="text" id="login-username" value="admin" class="w-full bg-black/40 border border-brand-border rounded py-2.5 px-3 text-sm focus:outline-none focus:border-brand-accent text-white" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-xs text-brand-muted uppercase mb-1">Passcode</label>
+                    <input type="password" id="login-password" value="praesidia2026" class="w-full bg-black/40 border border-brand-border rounded py-2.5 px-3 text-sm focus:outline-none focus:border-brand-accent text-white" required>
+                </div>
+                <button type="submit" class="w-full bg-brand-accent hover:bg-blue-600 text-white font-bold py-2.5 rounded shadow-lg shadow-brand-accent/30 transition-colors uppercase tracking-widest text-xs">
+                    Authorize Uplink
+                </button>
+                <div id="login-error" class="hidden text-brand-critical text-xs mt-3 text-center">Invalid credentials.</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Diagnostic Dev Console (Hidden by default, toggle with Ctrl+`) -->
+    <div id="dev-console" class="hidden fixed bottom-0 right-0 w-1/3 h-1/3 bg-black/90 border-l border-t border-brand-accent/50 z-[100] flex flex-col font-mono text-[10px] text-green-400 p-2 shadow-2xl">
+        <div class="flex justify-between items-center border-b border-green-900 pb-1 mb-2">
+            <span class="font-bold text-white uppercase tracking-widest">Diagnostic IPC Console</span>
+            <button onclick="document.getElementById('dev-console').classList.add('hidden')" class="text-red-500 hover:text-red-400">X</button>
+        </div>
+        <div id="dev-console-logs" class="overflow-y-auto flex-1 space-y-1"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-brand-sidebar flex flex-col border-r border-brand-border z-10 shrink-0">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shadow-lg shadow-brand-accent/30 ring-2 ring-brand-accent/50 bg-black">
+                <img src="logo.png" alt="Praesidia Logo" class="object-cover w-full h-full">
+            </div>
+            <div>
+                <h1 class="font-bold text-white tracking-wide text-sm">PRAESIDIA</h1>
+                <p class="text-[10px] text-brand-muted uppercase tracking-widest">AI Governance OS</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-4 py-4 space-y-2" id="sidebar-nav">
+            <div data-target="view-dashboard" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-r text-brand-muted hover:text-white group">
+                <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+            </div>
+            <div data-target="view-governance" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r text-brand-muted hover:text-white group">
+                <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Governance
+            </div>
+            <div data-target="view-risk" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r text-brand-muted hover:text-white group">
+                <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                Risk Analysis
+            </div>
+            <div data-target="view-audit" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r text-brand-muted hover:text-white group">
+                <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Audit Logs
+            </div>
+            <div data-target="view-vault" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r text-brand-muted hover:text-white group">
+                <svg class="w-4 h-4 text-brand-accent opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                Security Vault
+            </div>
+        </nav>
+
+        <div class="p-6 border-t border-brand-border mt-auto">
+            <button onclick="logout()" class="w-full py-2.5 px-4 bg-brand-sidebar text-brand-muted hover:bg-brand-critical/10 hover:text-brand-critical rounded transition-colors text-xs font-bold tracking-widest uppercase border border-transparent hover:border-brand-critical/30 flex justify-center items-center gap-2">
+                Disconnect Protocol
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative bg-brand-bg bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1E2333] to-brand-bg">
+        
+        <!-- Header -->
+        <header class="h-16 border-b border-brand-border flex items-center justify-between px-8 bg-brand-sidebar/50 backdrop-blur-sm z-10 shrink-0">
+            <div class="flex items-center gap-8">
+                <div class="flex items-baseline gap-2">
+                    <h2 class="text-white font-semibold uppercase tracking-wider text-sm">Praesidia Engine</h2>
+                </div>
+                <!-- Mini nav -->
+                <div class="hidden md:flex gap-6 text-xs text-brand-muted uppercase tracking-widest font-semibold" id="top-nav">
+                    <div data-target="view-dashboard" class="top-nav-item active hover:text-white">Global Status</div>
+                    <div data-target="view-vault" class="top-nav-item hover:text-white">Sovereign Vault</div>
+                    <div data-target="view-risk" class="top-nav-item hover:text-white">Threat Map</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <!-- User Profile -->
+                <div class="flex items-center gap-3 pl-6 border-l border-brand-border">
+                    <div class="text-right hidden sm:block">
+                        <div id="user-name" class="text-xs font-bold text-white leading-tight">Cmdr. Vane</div>
+                        <div id="user-role" class="text-[9px] text-brand-muted uppercase tracking-wider">L7 Access</div>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-brand-border overflow-hidden ring-2 ring-brand-accent/50">
+                        <img src="logo.png" alt="Avatar" class="object-cover w-full h-full">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content View -->
+        <div class="flex-1 overflow-y-auto p-8 relative">
+            <div class="max-w-6xl mx-auto space-y-6 relative h-full">
+                
+                <!-- ============================ -->
+                <!-- SECTION: DASHBOARD           -->
+                <!-- ============================ -->
+                <div id="view-dashboard" class="view-section active space-y-6">
+                    <!-- Top Hero Panel -->
+                    <div class="glass-panel rounded-xl p-8 flex justify-between items-center bg-gradient-to-r from-brand-card to-transparent border-t border-brand-safe/30">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white mb-2 tracking-tight">System Integrity <span class="text-brand-safe">Stable</span></h2>
+                            <p class="text-brand-muted text-sm max-w-lg mb-6 leading-relaxed">
+                                Autonomous Governance is active. Praesidia Interceptors are analyzing incoming neural routing paths in real-time.
+                            </p>
+                            <div class="flex gap-4">
+                                <div class="bg-black/30 border border-brand-border rounded px-4 py-2">
+                                    <span class="text-[10px] text-brand-muted uppercase block mb-1">Monitored Models</span>
+                                    <span class="text-lg font-bold text-white" id="db-models">--</span>
+                                </div>
+                                <div class="bg-black/30 border border-brand-border rounded px-4 py-2">
+                                    <span class="text-[10px] text-brand-muted uppercase block mb-1">Avg Latency</span>
+                                    <span class="text-lg font-bold text-white" id="db-latency">--ms</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="hidden lg:flex w-40 h-40 rounded-full border-4 border-brand-border items-center justify-center relative shadow-[0_0_50px_rgba(52,211,153,0.1)]">
+                            <div class="absolute inset-0 rounded-full border-t-4 border-brand-safe animate-spin" style="animation-duration: 4s;"></div>
+                            <div class="text-center">
+                                <span class="text-3xl font-bold text-white block" id="db-score">--</span>
+                                <span class="text-[9px] text-brand-muted uppercase tracking-widest">Security Score</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass-panel rounded-xl flex flex-col h-full border-t border-brand-accent/30">
+                            <div class="p-5 border-b border-brand-border flex justify-between items-center bg-black/20">
+                                <h3 class="font-bold text-white">Active Neural Monitoring</h3>
+                            </div>
+                            <div class="p-5 flex-1 space-y-4" id="db-alerts">
+                                <div class="text-center py-4 text-brand-muted text-xs animate-pulse">Scanning streams...</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel rounded-xl flex flex-col p-6 space-y-4 border-t border-brand-accent/30">
+                            <h3 class="font-bold text-white mb-2 border-b border-brand-border pb-4">Compliance Insights</h3>
+                            <div class="flex gap-4 mb-4">
+                                <div class="bg-black/30 border border-brand-border rounded px-4 py-4 w-1/2 text-center">
+                                    <div class="text-2xl font-bold text-white" id="db-compliance">--%</div>
+                                    <div class="text-[10px] text-brand-muted uppercase mt-1">Ethics Score</div>
+                                </div>
+                                <div class="bg-black/30 border border-brand-border rounded px-4 py-4 w-1/2 text-center">
+                                    <div class="text-2xl font-bold text-white">100%</div>
+                                    <div class="text-[10px] text-brand-muted uppercase mt-1">Data Privacy</div>
+                                </div>
+                            </div>
+                            <p class="text-brand-muted text-xs leading-5">System architecture maintains extreme alignment with current regulatory frameworks. No immediate corrective actions required for high-risk deployments. Continuous RAG enforcement is verifying prompt streams.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================ -->
+                <!-- SECTION: GOVERNANCE          -->
+                <!-- ============================ -->
+                <div id="view-governance" class="view-section space-y-6">
+                    <div class="glass-panel rounded-xl p-8 border-t border-brand-accent/30">
+                        <h2 class="text-2xl font-bold text-white mb-2">Governance Control</h2>
+                        <div class="flex gap-6 mt-6">
+                            <div class="bg-black/30 border border-brand-border rounded p-4 flex-1">
+                                <div class="text-3xl font-bold text-white" id="gov-active">--</div>
+                                <div class="text-xs text-brand-muted uppercase mt-1">Active Policies</div>
+                            </div>
+                            <div class="bg-black/30 border border-brand-border rounded p-4 flex-1">
+                                <div class="text-3xl font-bold text-brand-warning" id="gov-pending">--</div>
+                                <div class="text-xs text-brand-muted uppercase mt-1">Pending Reviews</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-xl border-t border-brand-accent/30">
+                        <div class="p-5 border-b border-brand-border bg-black/20">
+                            <h3 class="font-bold text-white">Recent Governance Updates</h3>
+                        </div>
+                        <div class="p-5 space-y-4" id="gov-updates">
+                            <!-- Injected -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================ -->
+                <!-- SECTION: RISK ANALYSIS       -->
+                <!-- ============================ -->
+                <div id="view-risk" class="view-section space-y-6">
+                    <div class="glass-panel rounded-xl p-8 border-t border-brand-critical/50">
+                        <h2 class="text-2xl font-bold text-white mb-2">Threat Map & Risk Analysis</h2>
+                        <div class="flex items-center gap-4 mt-4">
+                            <span class="text-lg font-bold text-brand-safe" id="risk-overall">LOADING</span>
+                            <span class="text-brand-muted text-sm">Overall Risk Posture</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-xl border-t border-brand-accent/30">
+                        <div class="p-5 border-b border-brand-border bg-black/20">
+                            <h3 class="font-bold text-white">Identified Vulnerabilities</h3>
+                        </div>
+                        <div class="p-0">
+                            <table class="w-full text-left text-sm text-brand-text">
+                                <thead class="text-xs text-brand-muted uppercase bg-black/40">
+                                    <tr>
+                                        <th class="px-6 py-3 border-b border-brand-border">ID</th>
+                                        <th class="px-6 py-3 border-b border-brand-border">Component</th>
+                                        <th class="px-6 py-3 border-b border-brand-border">Severity</th>
+                                        <th class="px-6 py-3 border-b border-brand-border">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="risk-vulns">
+                                    <!-- Injected -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================ -->
+                <!-- SECTION: AUDIT LOGS          -->
+                <!-- ============================ -->
+                <div id="view-audit" class="view-section space-y-6">
+                    <div class="glass-panel rounded-xl border-t border-brand-accent/30">
+                        <div class="p-5 border-b border-brand-border bg-black/20 flex justify-between items-center">
+                            <h3 class="font-bold text-white">System Audit Trail</h3>
+                            <button class="bg-black/50 border border-brand-border text-xs px-3 py-1 rounded">Export CSV</button>
+                        </div>
+                        <div class="p-0">
+                            <table class="w-full text-left text-sm text-brand-text">
+                                <thead class="text-xs text-brand-muted uppercase bg-black/40">
+                                    <tr>
+                                        <th class="px-6 py-3 border-b border-brand-border">Timestamp</th>
+                                        <th class="px-6 py-3 border-b border-brand-border">User/Node</th>
+                                        <th class="px-6 py-3 border-b border-brand-border">Action Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-table">
+                                    <!-- Injected -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================ -->
+                <!-- SECTION: SECURITY VAULT      -->
+                <!-- ============================ -->
+                <div id="view-vault" class="view-section space-y-6">
+                    <!-- Top Hero Panel: Vault Status -->
+                    <div class="glass-panel rounded-xl p-8 flex justify-between items-center bg-gradient-to-r from-brand-card to-transparent border-t border-brand-accent/20">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white mb-2 tracking-tight">Sovereign Vault <span class="text-brand-accent">Active</span></h2>
+                            <p class="text-brand-muted text-sm max-w-lg mb-6 leading-relaxed">
+                                Upload corporate policy documents. The Praesidia Engine will automatically extract Sovereign Enforcement Rules using Anthropic skills, indexing them for live RBAC interdiction.
+                            </p>
+                            <div class="flex gap-4">
+                                <div class="bg-black/30 border border-brand-border rounded px-4 py-2">
+                                    <span class="text-[10px] text-brand-muted uppercase block mb-1">Indexed Policies</span>
+                                    <span class="text-lg font-bold text-white" id="stat-policy-count">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- D&D Column -->
+                        <div class="lg:col-span-2 space-y-6">
+                            
+                            <!-- Upload Container -->
+                            <div class="glass-panel rounded-xl p-6 relative overflow-hidden group">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-brand-accent/10 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+                                
+                                <h3 class="font-bold text-white mb-4 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                    Document Ingestion
+                                </h3>
+                                
+                                <!-- Dropzone -->
+                                <div id="drop-zone" class="drop-zone rounded-lg p-10 flex flex-col items-center justify-center text-center cursor-pointer mb-4">
+                                    <svg class="w-12 h-12 text-brand-muted mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    <p class="text-white font-medium mb-1">Drag & drop policy files here</p>
+                                    <p class="text-xs text-brand-muted">Supports .PDF, .DOCX, .MD, .TXT (Max 10MB)</p>
+                                    <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.md,.txt" />
+                                </div>
+
+                                <div class="flex items-center gap-4 text-xs text-brand-muted uppercase font-semibold my-4">
+                                    <div class="h-px bg-brand-border flex-1"></div>
+                                    OR EXTERNAL UPLINK
+                                    <div class="h-px bg-brand-border flex-1"></div>
+                                </div>
+
+                                <!-- URL Input -->
+                                <div class="flex gap-3">
+                                    <input type="text" id="url-input" placeholder="Paste GitHub Gist or Notion URL..." class="flex-1 bg-black/40 border border-brand-border rounded py-2.5 px-4 text-sm focus:outline-none focus:border-brand-accent text-white">
+                                    <button onclick="handleUrlUpload()" class="bg-brand-sidebar border border-brand-border hover:border-brand-accent text-white px-6 py-2.5 rounded font-medium text-sm transition-colors shadow-sm flex items-center gap-2">
+                                        <span id="btn-text">Sync URL</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Extracted Rules Preview -->
+                            <div class="glass-panel rounded-xl p-6" id="preview-panel">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-bold text-white flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-brand-safe" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                        Last Extraction Result
+                                    </h3>
+                                    <span class="bg-brand-safe/10 text-brand-safe border border-brand-safe/20 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-bold">NeMo-Claw Synced</span>
+                                </div>
+                                <div class="bg-black/30 p-4 rounded border border-brand-border overflow-x-auto">
+                                    <pre id="json-preview" class="text-xs text-brand-muted font-mono whitespace-pre-wrap leading-relaxed">Upload a file or provide a URL to view the extracted Sovereign Enforcement Rules.</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Active Policies List -->
+                        <div class="space-y-6">
+                            <div class="glass-panel rounded-xl flex flex-col h-full border-t border-brand-accent/30">
+                                <div class="p-5 border-b border-brand-border flex justify-between items-center bg-black/20">
+                                    <h3 class="font-bold text-white">Active Neural Defense</h3>
+                                    <svg class="w-4 h-4 text-brand-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                </div>
+                                <div class="p-5 flex-1 overflow-y-auto space-y-4" id="policies-list">
+                                    <!-- Populated via JS -->
+                                    <div class="text-center py-8 text-brand-muted text-xs animate-pulse">Initializing feed...</div>
+                                </div>
+                                <div class="p-4 border-t border-brand-border bg-black/40 text-center">
+                                    <button onclick="fetchPolicies()" class="text-xs text-brand-muted hover:text-white uppercase tracking-wider font-semibold transition-colors">
+                                        Refresh Index
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Footer alignment info -->
+            <div class="fixed bottom-0 left-64 right-0 h-8 flex items-center justify-between px-8 text-[9px] uppercase tracking-widest text-brand-muted/70 bg-brand-bg/80 backdrop-blur pointer-events-none z-20">
+                <div class="flex gap-6">
+                    <span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-brand-safe"></div> Core Connectivity: Optimal</span>
+                    <span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-brand-accent"></div> Vector Store: Synced</span>
+                </div>
+                <div>© 2026 Praesidia Technologies.</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Upload Progress Toast (Hidden) -->
+    <div id="toast" class="fixed bottom-12 right-12 bg-brand-card border border-brand-accent border-l-4 rounded shadow-2xl p-4 flex items-start gap-3 transition-all duration-300 transform translate-y-20 opacity-0 z-50 max-w-sm pointer-events-none">
+        <svg class="w-5 h-5 text-brand-accent mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+            <h4 id="toast-title" class="text-sm font-bold text-white mb-1">Status</h4>
+            <p id="toast-msg" class="text-xs text-brand-muted">Message goes here</p>
+        </div>
+    </div>
+
+    <!-- Script Logic for Everything -->
+    <script>
+        // ─── LOGGING OVERRIDE FOR DEV CONSOLE ───
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog(...args);
+            const logBox = document.getElementById('dev-console-logs');
+            if(logBox) {
+                const ln = document.createElement('div');
+                ln.textContent = `[DEV] ${args.join(' ')}`;
+                logBox.appendChild(ln);
+                logBox.scrollTop = logBox.scrollHeight;
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.code === 'Backquote') {
+                const c = document.getElementById('dev-console');
+                c.classList.toggle('hidden');
+                console.log('Toggled Dev Console visibility.');
+            }
+        });
+
+        // ─── BASE URL: auto-detect Electron (file://) vs dev server (http://) ───
+        // Not used as much anymore since we route through IPC proxy, but kept for fallback
+        const BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3005' : '';
+
+        // ─── AUTHENTICATION FLOW ───
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginForm = document.getElementById('login-form');
+        
+        function checkAuth() {
+            const token = localStorage.getItem('praesidia_token');
+            if (!token) {
+                loginOverlay.classList.remove('hidden');
+            } else {
+                loginOverlay.classList.add('hidden');
+                loadAllData();
+            }
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const u = document.getElementById('login-username').value;
+            const p = document.getElementById('login-password').value;
+            
+            // For packaged Electron (file:// protocol), validate locally.
+            // For dev server (http:// protocol), call the API.
+            const isElectron = window.location.protocol === 'file:';
+
+            if (isElectron) {
+                // Local credential check — any non-empty username/password is accepted for demo
+                if (u && p) {
+                    localStorage.setItem('praesidia_token', 'electron-local-token');
+                    document.getElementById('user-name').innerText = u;
+                    document.getElementById('user-role').innerText = 'L7 Access';
+                    loginOverlay.classList.add('hidden');
+                    loadAllData();
+                    showToast('Authorization Granted', 'Secure uplink established.');
+                } else {
+                    document.getElementById('login-error').classList.remove('hidden');
+                }
+                return;
+            }
+
+            try {
+                // IPC Proxy request
+                console.log(`Sending IPC Request to: /api/auth/login`);
+                const res = await window.api.fetchData('/api/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: u, password: p})
+                });
+                
+                if (!res.ok) throw new Error("Invalid");
+                
+                const data = res.data;
+                localStorage.setItem('praesidia_token', data.token);
+                document.getElementById('user-name').innerText = data.user.name;
+                document.getElementById('user-role').innerText = data.user.role;
+                
+                loginOverlay.classList.add('hidden');
+                loadAllData();
+                showToast('Authorization Granted', 'Secure uplink established.');
+            } catch (err) {
+                console.log(`Login Error: ${err.message}`);
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('praesidia_token');
+            loginOverlay.classList.remove('hidden');
+        }
+
+        // ─── NAVIGATION FLOW ───
+        function attachNavigation() {
+            const navItems = document.querySelectorAll('.nav-item, .top-nav-item');
+            const views = document.querySelectorAll('.view-section');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.getAttribute('data-target');
+                    if (!targetId) return;
+
+                    // Update UI active states
+                    navItems.forEach(nav => {
+                        if (nav.getAttribute('data-target') === targetId) {
+                            nav.classList.add('active');
+                        } else {
+                            nav.classList.remove('active');
+                        }
+                    });
+
+                    // Switch views
+                    views.forEach(view => {
+                        if (view.id === targetId) {
+                            view.classList.add('active');
+                        } else {
+                            view.classList.remove('active');
+                        }
+                    });
+                });
+            });
+        }
+
+        // ─── DATA FETCHING FLOW ───
+        async function loadAllData() {
+            fetchDashboard();
+            fetchGovernance();
+            fetchRisk();
+            fetchAudit();
+            fetchPolicies(); // Security Vault function
+        }
+
+        async function fetchDashboard() {
+            try {
+                console.log("Fetching Dashboard Metrics...");
+                const res = await window.api.fetchData('/api/dashboard/metrics');
+                const data = res.data;
+                
+                document.getElementById('db-models').innerText = data.monitoredModels.toLocaleString();
+                document.getElementById('db-latency').innerText = data.latency + 'ms';
+                document.getElementById('db-score').innerText = data.score;
+                document.getElementById('db-compliance').innerText = data.complianceRate + '%';
+                
+                const alertsContainer = document.getElementById('db-alerts');
+                alertsContainer.innerHTML = '';
+                data.alerts.forEach(a => {
+                    alertsContainer.innerHTML += `
+                        <div class="bg-black/30 border border-brand-border rounded p-3 flex gap-4 items-start">
+                            <div class="mt-1 w-2 h-2 rounded-full bg-brand-accent shrink-0"></div>
+                            <div>
+                                <h4 class="text-sm font-bold text-white">${a.type}</h4>
+                                <p class="text-xs text-brand-muted my-1">${a.desc}</p>
+                                <span class="text-[10px] uppercase text-brand-muted/70">${a.time}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                console.log('Failed to load dashboard: ' + e.message);
+            }
+        }
+
+        async function fetchGovernance() {
+            try {
+                console.log("Fetching Governance Updates...");
+                const res = await window.api.fetchData('/api/governance/status');
+                const data = res.data;
+                document.getElementById('gov-active').innerText = data.activePolicies;
+                document.getElementById('gov-pending').innerText = data.pendingReviews;
+
+                const cont = document.getElementById('gov-updates');
+                cont.innerHTML = '';
+                data.recentUpdates.forEach(up => {
+                    cont.innerHTML += `
+                        <div class="flex justify-between items-center py-2 border-b border-brand-border last:border-0">
+                            <span class="text-sm text-white">${up.name}</span>
+                            <div class="text-right">
+                                <span class="text-xs font-bold ${up.status === 'Completed' ? 'text-brand-safe' : 'text-brand-warning'}">${up.status}</span>
+                                <div class="text-[10px] text-brand-muted uppercase">${up.date}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                console.log('Failed to fetch governance: ' + e);
+            }
+        }
+
+        async function fetchRisk() {
+            try {
+                console.log("Fetching Threat Map...");
+                const res = await window.api.fetchData('/api/risk/analysis');
+                const data = res.data;
+                
+                const scoreElem = document.getElementById('risk-overall');
+                scoreElem.innerText = data.overallRisk;
+                scoreElem.className = data.overallRisk === 'LOW' ? 'text-lg font-bold text-brand-safe' : 'text-lg font-bold text-brand-critical';
+
+                const cont = document.getElementById('risk-vulns');
+                cont.innerHTML = '';
+                data.vulnerabilities.forEach(v => {
+                    cont.innerHTML += `
+                        <tr class="hover:bg-black/20 border-b border-brand-border transition-colors">
+                            <td class="px-6 py-4 font-mono text-xs">${v.id}</td>
+                            <td class="px-6 py-4">${v.component}</td>
+                            <td class="px-6 py-4">
+                                <span class="${v.severity === 'Critical' ? 'text-brand-critical' : 'text-brand-warning'} uppercase font-bold text-[10px]">${v.severity}</span>
+                            </td>
+                            <td class="px-6 py-4">${v.mitigated ? '<span class="text-brand-safe">Mitigated</span>' : '<span class="text-brand-muted">Pending Action</span>'}</td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                console.log('Failed to fetch risk: ' + e);
+            }
+        }
+
+        async function fetchAudit() {
+            try {
+                console.log("Fetching Audit Logs...");
+                const res = await window.api.fetchData('/api/audit/logs');
+                const data = res.data;
+                const cont = document.getElementById('audit-table');
+                cont.innerHTML = '';
+                data.logs.forEach(L => {
+                    const d = new Date(L.timestamp).toLocaleString();
+                    cont.innerHTML += `
+                        <tr class="hover:bg-black/20 border-b border-brand-border transition-colors">
+                            <td class="px-6 py-3 text-xs text-brand-muted">${d}</td>
+                            <td class="px-6 py-3 text-xs text-white font-bold">${L.user}</td>
+                            <td class="px-6 py-3 text-xs">${L.action}</td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                console.log('Failed to fetch audit: ' + e);
+            }
+        }
+
+        // ─── SECURITY VAULT: DRAG & DROP FLOW ───
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const urlInput = document.getElementById('url-input');
+        const jsonPreview = document.getElementById('json-preview');
+        const policiesList = document.getElementById('policies-list');
+        const statCount = document.getElementById('stat-policy-count');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => {
+            dropZone.addEventListener(e, preventDefaults, false);
+        });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+        ['dragenter', 'dragover'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.add('dragover'), false));
+        ['dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.remove('dragover'), false));
+
+        dropZone.addEventListener('drop', (e) => {
+            if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files[0]);
+        }, false);
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', function() {
+            if(this.files.length) handleFileUpload(this.files[0]);
+        });
+
+        async function handleFileUpload(file) {
+            console.log("Uploading Document: " + file.name + " (" + file.path + ")");
+            showToast('Ingesting Document...', `Sending ${file.name} to Sentient Engine.`);
+            
+            try {
+                // Sent file via IPC pointing to path instead of binary stream
+                const res = await window.api.fetchData('/api/policies/upload', { 
+                    method: 'POST', 
+                    isFileUpload: true,
+                    filePath: file.path,
+                    fileName: file.name
+                });
+                const data = res.data;
+                if (data.error || !res.ok) throw new Error(data.error || "Upload failed");
+                
+                showToast('Success', 'Policy rules extracted and indexed in Supabase.');
+                renderPreview(data.policy);
+                fetchPolicies(); 
+            } catch (err) {
+                console.log('Upload error: ' + err.message);
+                showToast('Error', err.message);
+            }
+        }
+
+        async function handleUrlUpload() {
+            const url = urlInput.value.trim();
+            if (!url) return;
+            const btn = document.getElementById('btn-text');
+            btn.textContent = 'Syncing...';
+            console.log("Uploading URL: " + url);
+            showToast('Fetching URL...', 'Retrieving external policy document.');
+            try {
+                const res = await window.api.fetchData('/api/policies/url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const data = res.data;
+                if (data.error || !res.ok) throw new Error(data.error || "URL Upload failed");
+                
+                showToast('Success', 'External policy rules extracted and indexed.');
+                urlInput.value = '';
+                console.log("Success syncing policy from URL");
+                renderPreview(data.policy);
+                fetchPolicies();
+            } catch (err) {
+                console.log('Error syncing URL: ' + err.message);
+                showToast('Error', err.message);
+            } finally {
+                btn.textContent = 'Sync URL';
+            }
+        }
+
+        function renderPreview(policyObj) {
+            jsonPreview.textContent = JSON.stringify(policyObj, null, 2);
+            let html = jsonPreview.innerHTML;
+            html = html.replace(/"([^"]+)":/g, '<span class="text-brand-accent">"$1"</span>:');
+            jsonPreview.innerHTML = html;
+        }
+
+        async function fetchPolicies() {
+            try {
+                console.log("Fetching Policies Index...");
+                const res = await window.api.fetchData('/api/policies/list');
+                const data = res.data;
+                if (data.policies) {
+                    statCount.textContent = data.policies.length < 10 ? '0'+data.policies.length : data.policies.length;
+                    if (data.policies.length === 0) {
+                         policiesList.innerHTML = '<div class="text-center py-8 text-brand-muted text-xs">No active policies detected.</div>';
+                         return;
+                    }
+                    policiesList.innerHTML = '';
+                    data.policies.slice(0, 4).forEach(p => {
+                        const timeStr = new Date(p.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        policiesList.innerHTML += `
+                            <div class="bg-black/30 border border-brand-border rounded p-3 relative group">
+                                <div class="absolute w-1 h-full bg-brand-border left-0 top-0 rounded-l group-hover:bg-brand-accent transition-colors"></div>
+                                <div class="flex justify-between items-start pl-2">
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-white mb-0.5 truncate max-w-[180px]">${p.name}</h4>
+                                        <div class="text-[10px] text-brand-muted">${p.source?.replace('file://','') || 'Manual'}</div>
+                                    </div>
+                                    <span class="text-[10px] text-brand-muted uppercase">${timeStr}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (err) { console.log('Failed to load policies: ' + err); }
+        }
+
+        function showToast(title, msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-msg').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 4000);
+        }
+
+        // ─── INITIALIZATION ───
+        attachNavigation();
+        checkAuth();
+
+    </script>
+</body>
+</html>
