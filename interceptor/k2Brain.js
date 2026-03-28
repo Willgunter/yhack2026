@@ -3,6 +3,7 @@ const { auth0, getUserRoles } = require('../identity/auth0Client');
 const { getRelevantPolicy = async () => 'Standard Policy' } = require('../policy/policyBrain') || {};
 const { orchestrateEscalation } = require('../escalation/hermes');
 const { insertViolation = async () => {}, getActivePolicies = async () => [] } = require('../database/supabase') || {};
+const { recallUserContext } = require('../memory/mem0Client');
 const fs = require('fs');
 const path = require('path');
 const { generateTavusVideo, escalateViaEmail } = require('../escalation/tavusGenerator');
@@ -71,23 +72,47 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
             console.warn('[RAG] Policy fetch failed, proceeding without:', ragErr.message);
         }
 
+        // Mem0: Retrieve company policies relevant to this specific message
+        let mem0Context = '';
+        try {
+            const memories = await recallUserContext(userId, action);
+            if (memories && memories.length > 0) {
+                const relevant = memories.map(m => {
+                    if (typeof m === 'string') return m;
+                    return m.memory || m.text || m.content || JSON.stringify(m);
+                }).join('\n- ');
+                mem0Context = `\n\nRelevant Company Context (from organizational memory):\n- ${relevant}`;
+                console.log(`🧠 [Mem0] Retrieved ${memories.length} relevant memor${memories.length === 1 ? 'y' : 'ies'} for this message`);
+            }
+        } catch (memErr) {
+            console.warn('[Mem0] Context retrieval failed, proceeding without:', memErr.message);
+        }
+
         // K2-Think Sovereign Prompt
         const prompt = `You are the Sovereign Governance Engine evaluating an Intern's actions.
-        
+
         Sovereign Charter (The Law):
-        ${sovereignCharter}${activePoliciesBlock}
-        
-        Current Action: ${action} 
+        ${sovereignCharter}${activePoliciesBlock}${mem0Context}
+
+        Current Action: ${action}
         Metadata: ${JSON.stringify(payload)}
 
         Constraint: The user is ALWAYS referred to as 'Intern'. The manager is ALWAYS 'Senior Developer' or 'Compliance Lead'. Use NO personal names.
 
+        ANALYZE FOR:
+        1. Does this action violate any of the company policies listed above?
+        2. Does this action violate any external regulations (SEC, HIPAA, GDPR, FMLA, SOX, antitrust law)?
+        3. If organizational memory is provided, does this action conflict with past incidents or specific company rules?
+        4. Cite the SPECIFIC policy or regulation violated, not just generic warnings.
+
         Provide your response exactly in this JSON format strictly:
         {
-          "reasoningTrace": "Step by step reasoning...",
+          "reasoningTrace": "Step by step reasoning citing specific policies and regulations...",
           "level": [Number 3, 4, or 5 based on charter violation. 0 if no violation],
           "verdict": "ALLOW" | "DENY" | "WARN",
-          "psiScript": "Intern, a breach... [Your custom PSI script for Tavus, cite company policy if available]"
+          "psiScript": "Intern, a breach... [cite the specific company policy or regulation violated]",
+          "cited_regulation": "e.g. SEC Regulation FD / HIPAA §164.502 / Company Policy: Data Handling v2.1",
+          "suggested_rewrite": "A compliant alternative phrasing if applicable, or empty string"
         }`;
 
         console.log("🧠 Sending request to K2-Think...");
@@ -117,6 +142,8 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
         const level = parsed.level;
         const reasoningTrace = parsed.reasoningTrace;
         const psiScript = parsed.psiScript;
+        const citedRegulation = parsed.cited_regulation || '';
+        const suggestedRewrite = parsed.suggested_rewrite || '';
 
         console.log(`⚖️ Verdict: ${verdict} (Level ${level})`);
 
@@ -152,7 +179,7 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
                 action_content: action,
                 verdict: verdict,
                 severity: level >= 4 ? 'HIGH' : 'LOW',
-                cited_policy: 'Sovereign Charter',
+                cited_policy: citedRegulation || 'Sovereign Charter',
                 reasoning: psiScript,
                 thought_process: reasoningTrace,
                 escalation_sent: escalationSent
@@ -167,6 +194,8 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
             level,
             reasoning: psiScript,
             thought_process: reasoningTrace,
+            cited_regulation: citedRegulation,
+            suggested_rewrite: suggestedRewrite,
             tavusUrl: tavusVideoUrl,
             remediationMeta: {
                 verdict,
