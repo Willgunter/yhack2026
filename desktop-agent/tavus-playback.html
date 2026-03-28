@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        :root {
+            --stitch-bg: #0f172a;
+            --stitch-accent: #ef4444;
+            --stitch-text: #f8fafc;
+            --stitch-glow: rgba(239, 68, 68, 0.4);
+        }
+        body { margin: 0; background: var(--stitch-bg); overflow: hidden; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; flex-direction: column; width: 100vw; height: 100vh;}
+        video { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left: 0; z-index: 1;}
+        
+        .shield-anchor {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 20px var(--stitch-glow));
+            z-index: 5;
+        }
+
+        .overlay { position: absolute; z-index: 10; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(160, 0, 0, 0.9)); padding: 40px 20px 20px 20px; color: var(--stitch-text); text-align: center; }
+        .badge { background: var(--stitch-accent); color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 16px; margin-bottom: 8px; display: inline-block; border: 2px solid #fff; box-shadow: 0 0 15px var(--stitch-glow);}
+        
+        #loading-container { display: flex; flex-direction: column; align-items: center; z-index: 5; }
+        #loading-text { color: var(--stitch-accent); font-size: 24px; animation: pulse 1s infinite; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;}
+        
+        @keyframes pulse { 0% { opacity: 1; filter: brightness(1); } 50% { opacity: 0.5; filter: brightness(0.7); } 100% { opacity: 1; filter: brightness(1); } }
+    </style>
+</head>
+<body>
+    <div id="loading-container">
+        <img src="../extension/icons/icon128.png" alt="Nanobanana Shield" class="shield-anchor" />
+        <div id="loading-text">Establishing Sovereign Connection...</div>
+    </div>
+    <video id="tavus-video" autoplay controls style="display:none;"></video>
+    
+    <div class="overlay">
+        <div class="badge">SECURITY LOCKDOWN - SOVEREIGN PROTOCOL</div>
+        <p>A Level 5 Breach was detected. Please listen carefully. This terminal is locked until playback completes.</p>
+    </div>
+
+    <script>
+        const { ipcRenderer, remote } = require('electron');
+
+        ipcRenderer.on('play-tavus-video', (event, data) => {
+            const videoUrl = data?.videoUrl || 'tavusapi.com/hosted/simulated_live_injection.mp4';
+            const videoEl = document.getElementById('tavus-video');
+            const loadingText = document.getElementById('loading-text');
+            const loadingContainer = document.getElementById('loading-container');
+
+            if (videoUrl.includes('simulated')) {
+                 loadingText.innerText = 'Simulated Audio Playing...';
+                 setTimeout(() => { ipcRenderer.send('video-ended'); }, 8000);
+            } else {
+                 loadingContainer.style.display = 'none';
+                 videoEl.style.display = 'block';
+                 videoEl.src = videoUrl;
+
+                 videoEl.onended = () => {
+                     // Notify main to unlock
+                     ipcRenderer.send('video-ended');
+                 };
+            }
+        });
+    </script>
+</body>
+</html>
