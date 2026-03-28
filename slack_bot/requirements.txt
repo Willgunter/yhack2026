@@ -1,0 +1,6 @@
+slack-bolt
+fastapi
+uvicorn
+python-dotenv
+aiohttp
+mem0ai
