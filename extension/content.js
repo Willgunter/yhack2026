@@ -203,7 +203,7 @@
     });
     
     shadowRoot.getElementById('praesidia-dashboard-btn').addEventListener('click', () => {
-        window.open('http://localhost:3000/api/dashboard', '_blank');
+        window.open('http://127.0.0.1:3005/dashboard', '_blank');
     });
 
     // 5. Listen for Messages from Background
@@ -221,11 +221,11 @@
                 
                 // Add red pulse animation dynamically
                 const redAnim = document.createElement('style');
-                redAnim.textContent = \`@keyframes pulse-shield-red { 
+                redAnim.textContent = `@keyframes pulse-shield-red { 
                     0% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
                     50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.9); }
                     100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
-                }\`;
+                }`;
                 shadowRoot.appendChild(redAnim);
                 
             } else {
@@ -235,7 +235,7 @@
             }
 
             shadowRoot.getElementById('praesidia-reasoning').innerText = reasoning;
-            shadowRoot.getElementById('praesidia-manager-info').innerText = \`Notifying: \${notified_manager}\`;
+            shadowRoot.getElementById('praesidia-manager-info').innerText = `Notifying: ${notified_manager}`;
             
             // Auto open the card
             alertCard.classList.add('active');

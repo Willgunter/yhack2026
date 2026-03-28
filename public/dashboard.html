@@ -545,17 +545,12 @@
             }
 
             try {
-                // IPC Proxy request
-                console.log(`Sending IPC Request to: /api/auth/login`);
-                const res = await window.api.fetchData('/api/auth/login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username: u, password: p})
-                });
+                // Native IPC Login
+                console.log(`Sending Native IPC Login Request...`);
+                const data = await window.api.login(u, p);
                 
-                if (!res.ok) throw new Error("Invalid");
+                if (data.error) throw new Error(data.error);
                 
-                const data = res.data;
                 localStorage.setItem('praesidia_token', data.token);
                 document.getElementById('user-name').innerText = data.user.name;
                 document.getElementById('user-role').innerText = data.user.role;
@@ -564,7 +559,7 @@
                 loadAllData();
                 showToast('Authorization Granted', 'Secure uplink established.');
             } catch (err) {
-                console.log(`Login Error: ${err.message}`);
+                console.log(`Login Error [Native IPC]: ${err.message}`);
                 document.getElementById('login-error').classList.remove('hidden');
             }
         });
@@ -616,9 +611,8 @@
 
         async function fetchDashboard() {
             try {
-                console.log("Fetching Dashboard Metrics...");
-                const res = await window.api.fetchData('/api/dashboard/metrics');
-                const data = res.data;
+                console.log("Fetching Dashboard Metrics [Native IPC]...");
+                const data = await window.api.getDashboardMetrics();
                 
                 document.getElementById('db-models').innerText = data.monitoredModels.toLocaleString();
                 document.getElementById('db-latency').innerText = data.latency + 'ms';
@@ -646,9 +640,8 @@
 
         async function fetchGovernance() {
             try {
-                console.log("Fetching Governance Updates...");
-                const res = await window.api.fetchData('/api/governance/status');
-                const data = res.data;
+                console.log("Fetching Governance Updates [Native IPC]...");
+                const data = await window.api.getGovernanceStatus();
                 document.getElementById('gov-active').innerText = data.activePolicies;
                 document.getElementById('gov-pending').innerText = data.pendingReviews;
 
@@ -672,9 +665,8 @@
 
         async function fetchRisk() {
             try {
-                console.log("Fetching Threat Map...");
-                const res = await window.api.fetchData('/api/risk/analysis');
-                const data = res.data;
+                console.log("Fetching Threat Map [Native IPC]...");
+                const data = await window.api.getRiskAnalysis();
                 
                 const scoreElem = document.getElementById('risk-overall');
                 scoreElem.innerText = data.overallRisk;
@@ -701,9 +693,8 @@
 
         async function fetchAudit() {
             try {
-                console.log("Fetching Audit Logs...");
-                const res = await window.api.fetchData('/api/audit/logs');
-                const data = res.data;
+                console.log("Fetching Audit Logs [Native IPC]...");
+                const data = await window.api.getAuditLogs();
                 const cont = document.getElementById('audit-table');
                 cont.innerHTML = '';
                 data.logs.forEach(L => {
@@ -744,26 +735,22 @@
             if(this.files.length) handleFileUpload(this.files[0]);
         });
 
+        // Native File Selective Ingestion
         async function handleFileUpload(file) {
-            console.log("Uploading Document: " + file.name + " (" + file.path + ")");
-            showToast('Ingesting Document...', `Sending ${file.name} to Sentient Engine.`);
+            console.log("Triggering Native Policy Selector...");
+            showToast('Opening File Selector...', `Initializing Windows Native Dialog.`);
             
             try {
-                // Sent file via IPC pointing to path instead of binary stream
-                const res = await window.api.fetchData('/api/policies/upload', { 
-                    method: 'POST', 
-                    isFileUpload: true,
-                    filePath: file.path,
-                    fileName: file.name
-                });
-                const data = res.data;
-                if (data.error || !res.ok) throw new Error(data.error || "Upload failed");
+                const data = await window.api.selectAndUploadPolicy();
+                if (data.canceled) return;
                 
-                showToast('Success', 'Policy rules extracted and indexed in Supabase.');
+                if (data.error) throw new Error(data.error);
+                
+                showToast('Success', 'Policy rules extracted and indexed natively.');
                 renderPreview(data.policy);
                 fetchPolicies(); 
             } catch (err) {
-                console.log('Upload error: ' + err.message);
+                console.log('Ingestion error: ' + err.message);
                 showToast('Error', err.message);
             }
         }
@@ -773,20 +760,15 @@
             if (!url) return;
             const btn = document.getElementById('btn-text');
             btn.textContent = 'Syncing...';
-            console.log("Uploading URL: " + url);
+            console.log("Uploading URL [Native IPC]: " + url);
             showToast('Fetching URL...', 'Retrieving external policy document.');
             try {
-                const res = await window.api.fetchData('/api/policies/url', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url })
-                });
-                const data = res.data;
-                if (data.error || !res.ok) throw new Error(data.error || "URL Upload failed");
+                const data = await window.api.ingestPolicyUrl(url);
+                if (data.error) throw new Error(data.error);
                 
                 showToast('Success', 'External policy rules extracted and indexed.');
                 urlInput.value = '';
-                console.log("Success syncing policy from URL");
+                console.log("Success syncing policy from URL via IPC");
                 renderPreview(data.policy);
                 fetchPolicies();
             } catch (err) {
@@ -806,9 +788,8 @@
 
         async function fetchPolicies() {
             try {
-                console.log("Fetching Policies Index...");
-                const res = await window.api.fetchData('/api/policies/list');
-                const data = res.data;
+                console.log("Fetching Policies Index [Native IPC]...");
+                const data = await window.api.listPolicies();
                 if (data.policies) {
                     statCount.textContent = data.policies.length < 10 ? '0'+data.policies.length : data.policies.length;
                     if (data.policies.length === 0) {
@@ -832,6 +813,7 @@
                         `;
                     });
                 }
+                if (data.error) throw new Error(data.error);
             } catch (err) { console.log('Failed to load policies: ' + err); }
         }
 

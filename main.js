@@ -1,13 +1,124 @@
-const { app, BrowserWindow, Menu, ipcMain, Tray, Notification, screen } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, Tray, Notification, screen, utilityProcess } = require('electron');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
-const { fork } = require('child_process');
 const axios = require('axios');
+const { dialog } = require('electron');
 
-const PORT = process.env.PORT || 3005;
-const BASE_URL = `http://localhost:${PORT}`;
+// Native Service Imports
+const { listPolicies } = require('./database/supabase');
+const { ingestFile, ingestUrl } = require('./policy/ingestor');
 
-// Proxy frontend generic IPC fetches to Express
+// Constants for backend connectivity
+const PORT = 3005;
+const BASE_URL = `http://127.0.0.1:${PORT}`;
+process.env.PORT = PORT; // Force child to use this port
+
+// ─── NATIVE IPC HANDLERS (REPLACES NETWORK FETCH) ───
+
+// 1. Dashboard Metrics
+ipcMain.handle('get-dashboard-metrics', async () => {
+  return {
+    status: 'Active',
+    score: 98,
+    monitoredModels: 1402,
+    activeAlerts: 3,
+    complianceRate: 99.8,
+    latency: 14,
+    alerts: [
+      { type: 'GPT-4o Protocol Audit', time: '2M AGO', desc: 'Bias mitigation verification successfully completed. Drift within limits.' },
+      { type: 'Llama-3 Fine-tune Access', time: '14M AGO', desc: 'Identity verification matched biometric anchor. Access granted to Node 04.' },
+      { type: 'Outlier Detection', time: '45M AGO', desc: 'Anomalous inference pattern detected in Marketing Cluster. Auto-isolation initiated.' }
+    ]
+  };
+});
+
+// 2. Governance Status
+ipcMain.handle('get-governance-status', async () => {
+  return {
+    activePolicies: 12,
+    pendingReviews: 4,
+    recentUpdates: [
+      { name: 'SOC2 Type II Compliance Refresh', status: 'Completed', date: 'Today' },
+      { name: 'Data Retention Policy V3', status: 'Pending Review', date: 'Yesterday' }
+    ]
+  };
+});
+
+// 3. Risk Analysis
+ipcMain.handle('get-risk-analysis', async () => {
+  return {
+    overallRisk: 'LOW',
+    vulnerabilities: [
+      { id: 'VULN-001', severity: 'Medium', component: 'Prompt Injection Layer', mitigated: false },
+      { id: 'VULN-002', severity: 'Critical', component: 'Model Weights Endpoint', mitigated: true }
+    ],
+    threatActivity: 'Normal'
+  };
+});
+
+// 4. Audit Logs
+ipcMain.handle('get-audit-logs', async () => {
+  return {
+    logs: [
+      { id: 'LOG-992', user: 'System', action: 'RAG Model Sycned with Supabase', timestamp: new Date().toISOString() },
+      { id: 'LOG-991', user: 'Cmdr. Vane', action: 'Uploaded Sovereign Policy V4', timestamp: new Date(Date.now() - 3600000).toISOString() },
+      { id: 'LOG-990', user: 'Intern_14', action: 'Attempted Unsafe System Prompt', timestamp: new Date(Date.now() - 7200000).toISOString() }
+    ]
+  };
+});
+
+// 5. Policies List (Supabase)
+ipcMain.handle('get-policies-list', async () => {
+    try {
+        const policies = await listPolicies();
+        return { policies };
+    } catch (err) {
+        return { error: err.message };
+    }
+});
+
+// 6. Native File Ingestion
+ipcMain.handle('select-and-ingest-policy', async () => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openFile'],
+        filters: [{ name: 'Policies', extensions: ['pdf', 'docx', 'md', 'txt'] }]
+    });
+
+    if (result.canceled || result.filePaths.length === 0) return { canceled: true };
+    
+    const filePath = result.filePaths[0];
+    const fileName = path.basename(filePath);
+    
+    try {
+        const ingestResult = await ingestFile(filePath, fileName);
+        return { success: true, policy: ingestResult.rules };
+    } catch (err) {
+        return { error: err.message };
+    }
+});
+
+// 7. URL Ingestion
+ipcMain.handle('ingest-policy-url', async (event, url) => {
+    try {
+        const ingestResult = await ingestUrl(url);
+        return { success: true, policy: ingestResult.rules };
+    } catch (err) {
+        return { error: err.message };
+    }
+});
+
+
+// 8. Authentication (Mock)
+ipcMain.handle('auth-login', async (event, { username, password }) => {
+    if (username && password) {
+        return { success: true, token: 'mock-jwt-token-123', user: { name: 'Cmdr. Vane', role: 'L7 Access' } };
+    }
+    return { error: 'Invalid credentials' };
+});
+
+
+// Legacy proxy handler (to be phased out, but kept for non-migrated routes)
 ipcMain.handle('fetch-data', async (event, endpoint, options = {}) => {
   try {
     let requestData;
@@ -22,7 +133,6 @@ ipcMain.handle('fetch-data', async (event, endpoint, options = {}) => {
       const form = new FormData();
       form.append('policy', blob, options.fileName || 'upload.bin');
       requestData = form;
-      // Let Axios automatically set the multipart/form-data boundary when using native FormData
       delete headers['Content-Type'];
     } else {
       requestData = options.body ? JSON.parse(options.body) : undefined;
@@ -226,11 +336,16 @@ if (!gotTheLock) {
         });
     }
 
-    // 4. Start UI and Backend Background Process
-    backendProcess = fork(path.join(__dirname, 'index.js'), [], {
+    // 4. Start UI and Backend Background Utility Process
+    console.log(`[Main] Spawning backend engine on port ${PORT}...`);
+    backendProcess = utilityProcess.fork(path.join(__dirname, 'index.js'), [], {
         env: process.env,
-        stdio: ['inherit', 'inherit', 'inherit', 'ipc']
+        stdio: 'pipe'
     });
+
+    // Pipe backend logs to main process terminal for visibility
+    backendProcess.stdout.on('data', (data) => console.log(`[Backend-STDOUT]: ${data}`));
+    backendProcess.stderr.on('data', (data) => console.error(`[Backend-STDERR]: ${data}`));
 
     setTimeout(createWindow, 2000);
     backendProcess.on('message', (msg) => {

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const os = require('os');
 const http = require('http');
 const path = require('path');
 const multer = require('multer');
@@ -11,8 +12,8 @@ const { ingestFile, ingestUrl } = require('./policy/ingestor');
 const { listPolicies } = require('./database/supabase');
 require('dotenv').config();
 
-// Multer: store uploads in /tmp/praesidia-uploads
-const upload = multer({ dest: path.join(__dirname, 'tmp', 'uploads') });
+// Multer: store uploads in OS temp directory (works in packaged Electron)
+const upload = multer({ dest: path.join(os.tmpdir(), 'praesidia-uploads') });
 
 
 const app = express();
@@ -24,7 +25,8 @@ const io = new Server(server, {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
+const HOST = '127.0.0.1';
 
 // Middleware
 app.use(cors());
@@ -244,8 +246,8 @@ io.on('connection', (socket) => {
 });
 
 // Start Server
-server.listen(PORT, () => {
-  console.log(`🚀 Praesidia Engine running at http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`🚀 Praesidia Engine running at http://${HOST}:${PORT}`);
   console.log(`📡 WebSocket Gateway ready for Chrome Extension alerts.`);
 });
 
