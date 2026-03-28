@@ -152,9 +152,9 @@ export default function Home() {
         {/* HERO */}
         <section id="hero" style={{ minHeight: "90vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 24px 40px", textAlign: "center" }}>
           <div id="hero-inner" style={{ maxWidth: 740, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div id="hero-logo" style={{ marginBottom: 48 }}>
-              <Image src="/logo.png" alt="Praesidia" width={200} height={200}
-                style={{ margin: "0 auto", borderRadius: "50%", display: "block", filter: "drop-shadow(0 0 60px rgba(88,166,255,0.35)) drop-shadow(0 0 120px rgba(139,92,246,0.2))" }} />
+            <div id="hero-logo" style={{ marginBottom: 20 }}>
+              <Image src="/logo.png" alt="Praesidia" width={360} height={360}
+                style={{ margin: "0 auto", display: "block", objectFit: "cover", borderRadius: "50%", clipPath: "circle(42%)", filter: "drop-shadow(0 0 60px rgba(88,166,255,0.35)) drop-shadow(0 0 120px rgba(139,92,246,0.2))" }} />
             </div>
             <TypewriterEffectSmooth
               words={heroWords}
