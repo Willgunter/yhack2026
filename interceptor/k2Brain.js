@@ -2,7 +2,7 @@ const axios = require('axios');
 const { auth0, getUserRoles } = require('../identity/auth0Client');
 const { getRelevantPolicy = async () => 'Standard Policy' } = require('../policy/policyBrain') || {};
 const { orchestrateEscalation } = require('../escalation/hermes');
-const { insertViolation = async () => {} } = require('../database/supabase') || {};
+const { insertViolation = async () => {}, getActivePolicies = async () => [] } = require('../database/supabase') || {};
 const fs = require('fs');
 const path = require('path');
 const { generateTavusVideo, escalateViaEmail } = require('../escalation/tavusGenerator');
@@ -54,11 +54,28 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
             sovereignCharter = fs.readFileSync(charterPath, 'utf-8');
         }
 
+        // RAG: Fetch active policies from Supabase
+        let activePoliciesBlock = '';
+        try {
+            const policies = await getActivePolicies();
+            if (policies.length > 0) {
+                const policyRules = policies.map(p => {
+                    const rules = p.rules || {};
+                    const prohibited = (rules.prohibited_actions || []).map(a => `- ${a.action} (${a.regulation}, severity ${a.severity})`).join('\n');
+                    return `### ${p.name}\nProhibited Actions:\n${prohibited}\nEnforcement: ${rules.enforcement_message || ''}`.trim();
+                }).join('\n\n');
+                activePoliciesBlock = `\n\nActive Company Policies (enforce these ABOVE the charter if stricter):\n${policyRules}`;
+                console.log(`📚 [RAG] Injecting ${policies.length} active polic${policies.length === 1 ? 'y' : 'ies'} into K2 context`);
+            }
+        } catch (ragErr) {
+            console.warn('[RAG] Policy fetch failed, proceeding without:', ragErr.message);
+        }
+
         // K2-Think Sovereign Prompt
         const prompt = `You are the Sovereign Governance Engine evaluating an Intern's actions.
         
         Sovereign Charter (The Law):
-        ${sovereignCharter}
+        ${sovereignCharter}${activePoliciesBlock}
         
         Current Action: ${action} 
         Metadata: ${JSON.stringify(payload)}
@@ -70,7 +87,7 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
           "reasoningTrace": "Step by step reasoning...",
           "level": [Number 3, 4, or 5 based on charter violation. 0 if no violation],
           "verdict": "ALLOW" | "DENY" | "WARN",
-          "psiScript": "Intern, a breach... [Your custom PSI script for Tavus]"
+          "psiScript": "Intern, a breach... [Your custom PSI script for Tavus, cite company policy if available]"
         }`;
 
         console.log("🧠 Sending request to K2-Think...");
@@ -150,7 +167,19 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
             level,
             reasoning: psiScript,
             thought_process: reasoningTrace,
-            tavusUrl: tavusVideoUrl
+            tavusUrl: tavusVideoUrl,
+            remediationMeta: {
+                verdict,
+                level,
+                surface,
+                reasoningTrace,
+                violation_summary: psiScript,
+                file_path: payload.file_path || '',
+                line_number: payload.line_number || 0,
+                commit_id: payload.commit_id || '',
+                github_repo: payload.repo_url || process.env.GITHUB_REPO_URL || 'https://github.com/Willgunter/yhack2026',
+                slack_link: payload.slack_link || ''
+            }
         };
 
     } catch (error) {

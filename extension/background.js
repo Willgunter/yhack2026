@@ -1,7 +1,7 @@
 // Import locally bundled socket.io instead of CDN to avoid CSP errors
-importScripts('socket.io.js');
+importScripts('lib/socket.io.min.js');
 
-const PR_SERVER = 'http://localhost:3000';
+const PR_SERVER = 'http://127.0.0.1:3005';
 let socket;
 
 function connect() {

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Praesidia — Senior Remediation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #09090b;
+    color: #e4e4e7;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    border-bottom: 1px solid #27272a;
+    background: #0a0a0c;
+    -webkit-app-region: drag;
+  }
+
+  .shield { font-size: 22px; }
+
+  header h1 { 
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  header .subtitle { 
+    font-size: 11px; 
+    color: #71717a;
+    margin-left: auto;
+    font-family: 'Geist Mono', monospace;
+  }
+
+  main { flex: 1; overflow-y: auto; padding: 20px 24px; gap: 14px; display: flex; flex-direction: column; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #71717a;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .violation-card {
+    background: #18181b;
+    border: 1px solid #ef4444;
+    border-left-width: 3px;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  .violation-card .level {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ef4444;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .violation-card .msg {
+    font-size: 13px;
+    color: #fafafa;
+    line-height: 1.5;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .meta-item {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .meta-item .key {
+    font-size: 10px;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .meta-item .val {
+    font-size: 12px;
+    color: #e4e4e7;
+    font-family: 'Geist Mono', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .actions-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-slack { background: #4a154b; color: #fff; }
+  .btn-github { background: #1c1c1e; color: #e4e4e7; border: 1px solid #3f3f46; }
+  .btn-highlight { background: #06b6d4; color: #000; font-weight: 700; }
+
+  .reasoning-box {
+    background: #0a0a0c;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: #a1a1aa;
+    line-height: 1.7;
+    max-height: 160px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  footer {
+    padding: 12px 24px;
+    border-top: 1px solid #27272a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #71717a;
+    background: #0a0a0c;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #06b6d4;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 4px rgba(6,182,212,0.6); }
+    50% { opacity: 0.4; box-shadow: 0 0 8px rgba(6,182,212,0.3); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="shield">👔</span>
+  <h1>Senior Remediation Dashboard</h1>
+  <span class="subtitle">NeMo-Claw v1.0</span>
+</header>
+
+<main>
+  <div>
+    <div class="section-label">Active Violation</div>
+    <div class="violation-card">
+      <div class="level" id="level-badge">LEVEL — / LOADING</div>
+      <div class="msg" id="violation-msg">Retrieving violation metadata...</div>
+    </div>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-item">
+      <div class="key">File</div>
+      <div class="val" id="meta-file">—</div>
+    </div>
+    <div class="meta-item">
+      <div class="key">Line</div>
+      <div class="val" id="meta-line">—</div>
+    </div>
+    <div class="meta-item">
+      <div class="key">Surface</div>
+      <div class="val" id="meta-surface">—</div>
+    </div>
+    <div class="meta-item">
+      <div class="key">Commit</div>
+      <div class="val" id="meta-commit">—</div>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-slack" id="btn-slack" onclick="openSlack()">Open Slack Thread</button>
+    <button class="btn btn-github" id="btn-github" onclick="openGithub()">Open GitHub Diff</button>
+    <button class="btn btn-highlight" onclick="triggerHighlight()">🛡️ Highlight Violation</button>
+  </div>
+
+  <div style="margin-top: 8px;">
+    <div class="section-label">K2-Think Reasoning Trace</div>
+    <div class="reasoning-box" id="reasoning-box">Waiting for data...</div>
+  </div>
+</main>
+
+<footer>
+  <div class="status-dot"></div>
+  <span>NeMo-Claw system actions executed automatically on load</span>
+</footer>
+
+<script>
+  const { ipcRenderer, shell } = require('electron');
+  let meta = {};
+
+  ipcRenderer.on('violation-meta', (_, data) => {
+    meta = data || {};
+    
+    document.getElementById('level-badge').textContent = `LEVEL ${meta.level || '?'} — ${meta.verdict || 'UNKNOWN'}`;
+    document.getElementById('violation-msg').textContent = meta.violation_summary || meta.reasoning || 'No summary available.';
+    document.getElementById('meta-file').textContent = meta.file_path || '—';
+    document.getElementById('meta-line').textContent = meta.line_number || '—';
+    document.getElementById('meta-surface').textContent = meta.surface || '—';
+    document.getElementById('meta-commit').textContent = meta.commit_id ? meta.commit_id.substring(0, 10) + '...' : '—';
+    document.getElementById('reasoning-box').textContent = meta.reasoningTrace || meta.thought_process || 'No reasoning trace.';
+  });
+
+  function openSlack() {
+    if (meta.slack_link) {
+      shell.openExternal(meta.slack_link);
+    } else {
+      alert('No Slack link in this violation record.');
+    }
+  }
+
+  function openGithub() {
+    const repo = meta.github_repo || 'https://github.com/Willgunter/yhack2026';
+    const commit = meta.commit_id || '';
+    const line = meta.line_number || 0;
+    let url = `${repo}/commit/${commit}`;
+    if (line) url += `#L${line}`;
+    shell.openExternal(url);
+  }
+
+  function triggerHighlight() {
+    fetch('http://localhost:3005/api/highlight', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file: meta.file_path,
+        line: meta.line_number,
+        summary: meta.violation_summary
+      })
+    }).catch(console.error);
+  }
+</script>
+
+</body>
+</html>

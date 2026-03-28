@@ -177,8 +177,33 @@ def analyze_with_k2(
     api_key = os.environ.get("CEREBRAS_API_KEY", "")
     model = os.environ.get("K2_MODEL", "k2-think-v2")
 
+    # Fetch organisational memory from Mem0
+    mem0_context = ""
+    mem0_key = os.environ.get("MEM0_API_KEY", "")
+    if mem0_key:
+        try:
+            import urllib.request as _req
+            import json as _json
+            mem_req = _req.Request(
+                "https://api.mem0.ai/v1/memories/search/",
+                data=_json.dumps({"query": scrubbed_context[:200], "limit": 5}).encode(),
+                headers={
+                    "Authorization": f"Token {mem0_key}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with _req.urlopen(mem_req, timeout=8) as r:
+                memories = _json.loads(r.read())
+                if memories:
+                    mem_lines = [m.get("memory", "") for m in memories if m.get("memory")]
+                    mem0_context = "\n".join(mem_lines)
+                    print(f"[Mem0] Retrieved {len(mem_lines)} memories for context")
+        except Exception as mem_err:
+            print(f"[Mem0] Could not retrieve memories: {mem_err}")
+
     # Build the analysis prompt
-    prompt = _build_k2_prompt(scrubbed_context, commit_message, org_policies, semantic_changes)
+    prompt = _build_k2_prompt(scrubbed_context, commit_message, org_policies or mem0_context, semantic_changes)
 
     if not api_key:
         # Console fallback for demo
