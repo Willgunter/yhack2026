@@ -1,0 +1,32 @@
+{
+  "name": "praesidia",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@google/stitch-sdk": "^0.0.3",
+    "@octokit/rest": "^22.0.1",
+    "@slack/web-api": "^7.15.0",
+    "@supabase/supabase-js": "^2.100.1",
+    "auth0": "^5.5.0",
+    "axios": "^1.14.0",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-oauth2-jwt-bearer": "^1.7.4",
+    "mem0ai": "^2.4.3",
+    "resend": "^3.5.0",
+    "sharp": "^0.34.5",
+    "socket.io": "^4.8.3",
+    "twilio": "^5.13.1"
+  }
+}
