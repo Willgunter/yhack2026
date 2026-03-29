@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Praesidia — Review Gate</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .logo svg { width: 48px; height: 48px; }
+  .header h1 { font-size: 28px; color: #58a6ff; font-weight: 700; }
+  .header .tagline { color: #8b949e; font-size: 14px; }
+
+  .summary-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 16px;
+  }
+  .summary-bar .count {
+    background: #da3633;
+    color: #fff;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f0f6fc;
+    margin: 24px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+  }
+
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-pii { background: #da3633; color: #fff; }
+  .badge-risk { background: #d29922; color: #fff; }
+  .badge-commit { background: #1f6feb; color: #fff; }
+  .badge-accuracy { background: #8b5cf6; color: #fff; }
+  .badge-semantic { background: #2ea043; color: #fff; }
+
+  .confidence-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+  }
+  .confidence-bar {
+    flex: 1;
+    max-width: 200px;
+    height: 8px;
+    background: #21262d;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .confidence-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  .confidence-fill.high { background: #da3633; }
+  .confidence-fill.medium { background: #d29922; }
+  .confidence-fill.low { background: #3fb950; }
+  .confidence-pct { font-size: 13px; font-weight: 600; color: #f0f6fc; min-width: 40px; }
+
+  /* Accuracy score bar (inverted: low = red, high = green) */
+  .accuracy-bar {
+    width: 100%;
+    max-width: 300px;
+    height: 12px;
+    background: #21262d;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .accuracy-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.3s;
+  }
+  .accuracy-fill.good { background: #3fb950; }
+  .accuracy-fill.warn { background: #d29922; }
+  .accuracy-fill.bad { background: #da3633; }
+
+  .accuracy-score {
+    font-size: 28px;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+  .accuracy-score.good { color: #3fb950; }
+  .accuracy-score.warn { color: #d29922; }
+  .accuracy-score.bad { color: #da3633; }
+
+  .reason-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 8px;
+  }
+  .reason-list li {
+    font-size: 13px;
+    color: #d29922;
+    padding: 4px 0;
+  }
+  .reason-list li::before { content: "! "; font-weight: 700; }
+
+  .file-info {
+    font-size: 13px;
+    color: #8b949e;
+    margin: 4px 0;
+  }
+  .file-info code {
+    background: #21262d;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #79c0ff;
+    font-size: 12px;
+  }
+
+  .redacted {
+    font-family: 'Courier New', monospace;
+    background: #21262d;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 8px 0;
+    color: #f85149;
+    font-size: 14px;
+    word-break: break-all;
+  }
+
+  .change-summary {
+    font-size: 14px;
+    color: #8b949e;
+    background: #21262d;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin: 8px 0;
+    font-style: italic;
+  }
+
+  .risk-reasons { list-style: none; padding: 0; }
+  .risk-reasons li { font-size: 13px; color: #d29922; padding: 2px 0; }
+  .risk-reasons li::before { content: "! "; font-weight: 700; }
+
+  .notify-section {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 24px 0;
+    font-size: 14px;
+  }
+  .notify-section strong { color: #f0f6fc; }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin: 32px 0;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn:active { transform: scale(0.98); }
+  .btn-approve { background: #238636; color: #fff; }
+  .btn-edit { background: #9e6a03; color: #fff; }
+  .btn-block { background: #da3633; color: #fff; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(13, 17, 23, 0.95);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  .overlay.show { display: flex; }
+  .overlay .icon { font-size: 64px; margin-bottom: 16px; }
+  .overlay .msg { font-size: 24px; color: #f0f6fc; font-weight: 600; }
+  .overlay .sub { font-size: 14px; color: #8b949e; margin-top: 8px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-card .num { font-size: 32px; font-weight: 700; color: #58a6ff; }
+  .stat-card .label { font-size: 12px; color: #8b949e; margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; padding: 10px 12px;
+    background: #161b22; border-bottom: 2px solid #30363d;
+    color: #f0f6fc; font-weight: 600;
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid #21262d; }
+  tr:hover td { background: #161b22; }
+
+  .decision-approved { color: #3fb950; }
+  .decision-blocked { color: #da3633; }
+  .decision-cancelled { color: #d29922; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M24 4L6 14v12c0 11 8 18 18 20 10-2 18-9 18-20V14L24 4z" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+      <path d="M24 12l-10 6v8c0 7 4 12 10 14 6-2 10-7 10-14v-8l-10-6z" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5"/>
+      <circle cx="24" cy="24" r="4" fill="#58a6ff"/>
+      <path d="M24 20v-4M24 28v4M20 24h-4M28 24h4" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div>
+    <h1>Praesidia</h1>
+    <div class="tagline">Multiple lines of defense</div>
+  </div>
+</div>
+
+<div id="review-mode">
+  <div class="summary-bar">
+    <span class="count" id="finding-count">0</span>
+    <span id="summary-text">Loading findings...</span>
+  </div>
+
+  <!-- Commit Message Accuracy -->
+  <div id="accuracy-section" style="display:none">
+    <div class="section-title">Commit Message Accuracy</div>
+    <div id="accuracy-card"></div>
+  </div>
+
+  <!-- Change Summary -->
+  <div id="summary-section" style="display:none">
+    <div class="section-title">What Changed</div>
+    <div id="summary-card"></div>
+  </div>
+
+  <!-- PII Findings -->
+  <div id="pii-section" style="display:none">
+    <div class="section-title">PII / PHI Findings</div>
+    <div id="pii-cards"></div>
+  </div>
+
+  <!-- High Risk Files -->
+  <div id="risk-section" style="display:none">
+    <div class="section-title">High-Risk Files</div>
+    <div id="risk-cards"></div>
+  </div>
+
+  <!-- Commit Message -->
+  <div id="commit-section" style="display:none">
+    <div class="section-title">Commit Message</div>
+    <div id="commit-card"></div>
+  </div>
+
+  <div class="notify-section" id="notify-section">
+    <strong>If blocked, alerts will be sent to:</strong>
+    <div id="notify-list" style="margin-top: 8px;"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-approve" id="btn-approve" onclick="submitDecision('approve')">Approve &amp; Continue</button>
+    <button class="btn btn-edit" id="btn-edit" onclick="submitDecision('edit')">I'll Edit This First</button>
+    <button class="btn btn-block" id="btn-block" onclick="submitDecision('block')">Block &amp; Report</button>
+  </div>
+</div>
+
+<div id="dashboard-mode" style="display:none">
+  <div class="section-title">Compliance Dashboard</div>
+  <div class="stats-grid" id="stats-grid"></div>
+  <div class="section-title">Audit Events</div>
+  <div style="overflow-x:auto">
+    <table id="events-table">
+      <thead>
+        <tr><th>Time</th><th>User</th><th>Source</th><th>Decision</th><th>PII Types</th><th>Violations</th><th>SMS</th></tr>
+      </thead>
+      <tbody id="events-body"></tbody>
+    </table>
+  </div>
+  <div style="margin-top: 16px;">
+    <button class="btn btn-approve" onclick="exportCSV()">Export CSV</button>
+    <button class="btn btn-edit" onclick="loadDashboard()">Refresh</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="icon" id="overlay-icon"></div>
+  <div class="msg" id="overlay-msg"></div>
+  <div class="sub" id="overlay-sub"></div>
+</div>
+
+<script>
+const findings = {{ findings | tojson if findings else '{}' | safe }};
+const isDashboard = {{ 'true' if dashboard else 'false' }};
+
+function init() {
+  if (isDashboard) {
+    document.getElementById('review-mode').style.display = 'none';
+    document.getElementById('dashboard-mode').style.display = 'block';
+    loadDashboard();
+    return;
+  }
+
+  const piiFindings = findings.pii_findings || [];
+  const riskFiles = findings.high_risk_files || [];
+  const accuracy = findings.commit_accuracy || {score: 100, reasons: []};
+  const changeSummary = findings.change_summary || '';
+  const totalFindings = piiFindings.length + riskFiles.length + (accuracy.score < 70 ? 1 : 0);
+
+  document.getElementById('finding-count').textContent = totalFindings;
+  document.getElementById('summary-text').textContent =
+    totalFindings + ' finding' + (totalFindings !== 1 ? 's' : '') + ' detected in ' +
+    (findings.total_files_changed || 0) + ' file' + ((findings.total_files_changed || 0) !== 1 ? 's' : '');
+
+  // Commit accuracy
+  if (accuracy.score < 100) {
+    document.getElementById('accuracy-section').style.display = 'block';
+    const cls = accuracy.score >= 70 ? 'good' : accuracy.score >= 40 ? 'warn' : 'bad';
+    const reasons = (accuracy.reasons || []).map(function(r) { return '<li>' + r + '</li>'; }).join('');
+    document.getElementById('accuracy-card').innerHTML =
+      '<div class="card">' +
+      '  <div class="card-header"><span class="badge badge-accuracy">ACCURACY</span></div>' +
+      '  <div style="display:flex;align-items:center;gap:12px">' +
+      '    <span class="accuracy-score ' + cls + '">' + accuracy.score + '/100</span>' +
+      '    <div class="accuracy-bar"><div class="accuracy-fill ' + cls + '" style="width:' + accuracy.score + '%"></div></div>' +
+      '  </div>' +
+      '  <ul class="reason-list">' + reasons + '</ul>' +
+      '</div>';
+  }
+
+  // Change summary
+  if (changeSummary) {
+    document.getElementById('summary-section').style.display = 'block';
+    document.getElementById('summary-card').innerHTML =
+      '<div class="card"><div class="card-header"><span class="badge badge-semantic">CHANGES</span></div>' +
+      '<div class="change-summary">' + changeSummary + '</div></div>';
+  }
+
+  // PII findings
+  if (piiFindings.length > 0) {
+    document.getElementById('pii-section').style.display = 'block';
+    var container = document.getElementById('pii-cards');
+    piiFindings.forEach(function(f) {
+      var pct = Math.round(f.score * 100);
+      var level = pct >= 90 ? 'high' : pct >= 70 ? 'medium' : 'low';
+      container.innerHTML +=
+        '<div class="card"><div class="card-header"><span class="badge badge-pii">' + f.type + '</span></div>' +
+        '<div class="confidence-wrap"><span style="font-size:13px;color:#8b949e">Confidence:</span>' +
+        '<div class="confidence-bar"><div class="confidence-fill ' + level + '" style="width:' + pct + '%"></div></div>' +
+        '<span class="confidence-pct">' + pct + '%</span></div>' +
+        (f.filename ? '<div class="file-info">File: <code>' + f.filename + '</code>' + (f.line_number ? ' line ' + f.line_number : '') + '</div>' : '') +
+        '<div class="redacted">' + (f.redacted || f.redacted_text || '***') + '</div></div>';
+    });
+  }
+
+  // High-risk files
+  if (riskFiles.length > 0) {
+    document.getElementById('risk-section').style.display = 'block';
+    var container2 = document.getElementById('risk-cards');
+    riskFiles.forEach(function(f) {
+      var reasons = (f.risk_reasons || []).map(function(r) { return '<li>' + r + '</li>'; }).join('');
+      container2.innerHTML +=
+        '<div class="card"><div class="card-header"><span class="badge badge-risk">HIGH RISK</span>' +
+        '<span style="color:#f0f6fc;font-weight:600">' + f.file + '</span></div>' +
+        '<ul class="risk-reasons">' + reasons + '</ul></div>';
+    });
+  }
+
+  // Commit message
+  if (findings.commit_message) {
+    document.getElementById('commit-section').style.display = 'block';
+    document.getElementById('commit-card').innerHTML =
+      '<div class="card"><div class="card-header"><span class="badge badge-commit">COMMIT MSG</span></div>' +
+      '<div style="font-family:monospace;margin-top:8px;color:#f0f6fc">"' + findings.commit_message + '"</div></div>';
+  }
+
+  document.getElementById('notify-list').innerHTML =
+    '<div>Author: <strong>developer</strong> (SMS + Desktop notification)</div>' +
+    '<div>Manager: <strong>manager</strong> (SMS)</div>';
+}
+
+function submitDecision(action) {
+  var btns = document.querySelectorAll('.btn');
+  btns.forEach(function(b) { b.disabled = true; });
+
+  fetch('/' + action, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({user: 'developer', manager: 'manager'})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var overlay = document.getElementById('overlay');
+    overlay.classList.add('show');
+
+    if (action === 'approve') {
+      document.getElementById('overlay-icon').textContent = '\u2705';
+      document.getElementById('overlay-msg').textContent = 'Approved \u2014 Commit Proceeding';
+      document.getElementById('overlay-sub').textContent = 'Forwarded to K2 Think V2 for legal analysis';
+    } else if (action === 'edit') {
+      document.getElementById('overlay-icon').textContent = '\u270F\uFE0F';
+      document.getElementById('overlay-msg').textContent = 'Edit Mode \u2014 Fix and Re-commit';
+      document.getElementById('overlay-sub').textContent = 'The commit has been cancelled. Edit your changes and try again.';
+      fetch('/block', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user: 'developer', manager: 'manager'})});
+    } else {
+      document.getElementById('overlay-icon').textContent = '\uD83D\uDEAB';
+      document.getElementById('overlay-msg').textContent = 'Blocked \u2014 Commit Aborted';
+      document.getElementById('overlay-sub').textContent = 'SMS + desktop alerts sent. Event logged to audit trail.';
+    }
+
+    setTimeout(function() { window.close(); }, 3000);
+  })
+  .catch(function(err) {
+    console.error(err);
+    btns.forEach(function(b) { b.disabled = false; });
+  });
+}
+
+function loadDashboard() {
+  fetch('/api/events')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var stats = data.stats || {};
+      document.getElementById('stats-grid').innerHTML =
+        '<div class="stat-card"><div class="num">' + (stats.total_events||0) + '</div><div class="label">Total Events</div></div>' +
+        '<div class="stat-card"><div class="num" style="color:#3fb950">' + (stats.approved||0) + '</div><div class="label">Approved</div></div>' +
+        '<div class="stat-card"><div class="num" style="color:#da3633">' + (stats.blocked||0) + '</div><div class="label">Blocked</div></div>' +
+        '<div class="stat-card"><div class="num" style="color:#d29922">' + (stats.violations_found||0) + '</div><div class="label">Violations</div></div>' +
+        '<div class="stat-card"><div class="num">' + (stats.sms_sent||0) + '</div><div class="label">SMS Sent</div></div>';
+
+      var body = document.getElementById('events-body');
+      body.innerHTML = '';
+      (data.events || []).forEach(function(e) {
+        var cls = e.decision === 'APPROVED' ? 'decision-approved' :
+                  e.decision === 'BLOCKED' ? 'decision-blocked' : 'decision-cancelled';
+        body.innerHTML += '<tr><td>' + (e.timestamp||'') + '</td><td>' + (e.user||'') + '</td><td>' + (e.source||'') +
+          '</td><td class="' + cls + '">' + (e.decision||'') + '</td><td>' + (e.pii_types||'') +
+          '</td><td>' + (e.violation_types||'') + '</td><td>' + (e.sms_sent ? '\u2705' : '') + '</td></tr>';
+      });
+    });
+}
+
+function exportCSV() { window.location.href = '/api/export'; }
+
+init();
+</script>
+</body>
+</html>

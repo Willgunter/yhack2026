@@ -1,0 +1,2 @@
+﻿
+[dotenv@17.3.1] injecting env (27) from ..\..\..\Desktop\Praesidia-App\resources\app.asar\.env -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }

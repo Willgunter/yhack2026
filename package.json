@@ -1,0 +1,70 @@
+{
+  "name": "praesidia",
+  "version": "1.0.0",
+  "description": "Praesidia AI Governance Engine",
+  "main": "main.js",
+  "scripts": {
+    "start": "node index.js",
+    "electron": "electron .",
+    "build": "electron-builder --win",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "build": {
+    "appId": "com.praesidia.engine",
+    "productName": "Praesidia Engine",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "dir",
+      "icon": "public/praesidia.ico"
+    },
+    "asar": false,
+    "extraResources": [
+      ".env"
+    ],
+    "files": [
+      "**/*",
+      ".env",
+      "node_modules/**"
+    ]
+  },
+  "keywords": [],
+  "author": "Praesidia Team",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@google/generative-ai": "^0.24.1",
+    "@google/stitch-sdk": "^0.0.3",
+    "@mistralai/mistralai": "^2.1.2",
+    "@octokit/rest": "^22.0.1",
+    "@slack/web-api": "^7.15.0",
+    "@supabase/supabase-js": "^2.100.1",
+    "anthropic": "^0.0.0",
+    "auth0": "^5.5.0",
+    "axios": "^1.14.0",
+    "better-sqlite3": "^12.8.0",
+    "body-parser": "^2.2.2",
+    "cohere-ai": "^7.21.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-oauth2-jwt-bearer": "^1.7.4",
+    "groq-sdk": "^1.1.2",
+    "mem0ai": "^2.4.3",
+    "multer": "^2.1.1",
+    "ollama": "^0.6.3",
+    "resend": "^3.5.0",
+    "sharp": "^0.34.5",
+    "socket.io": "^4.8.3",
+    "together-ai": "^0.38.0",
+    "twilio": "^5.13.1"
+  },
+  "devDependencies": {
+    "electron": "^41.1.0",
+    "electron-builder": "^26.8.1",
+    "electron-packager": "^17.1.2",
+    "png-to-ico": "^3.0.1"
+  }
+}
