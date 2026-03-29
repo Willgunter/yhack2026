@@ -15,7 +15,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const PORT = process.env.PORT || 3005;
 const TOKEN_PATH = path.join(os.homedir(), '.praesidia', 'slack_tokens.json');
 const DB_PATH = path.join(os.homedir(), '.praesidia', 'slack_queue.db');
-const POLL_INTERVAL = 10000; // 10s to avoid Slack rate limits
+const POLL_INTERVAL = 5000; // 5s — Business+ tier has higher rate limits
 const WORKER_INTERVAL = 3000;
 
 // ─── DATABASE SETUP ───

@@ -113,12 +113,37 @@ ipcMain.handle('ingest-policy-url', async (event, url) => {
 });
 
 
-// 8. Authentication (Mock)
+// 8. Authentication — Role-Based (Intern vs Senior)
+let currentUserRole = 'intern'; // default role
+
+const USER_ACCOUNTS = {
+    'intern':  { name: 'Intern', role: 'intern', displayRole: 'Intern — Restricted', password: 'intern2026' },
+    'senior':  { name: 'Sr. Developer', role: 'senior', displayRole: 'Senior Dev — Override Access', password: 'senior2026' },
+    'admin':   { name: 'Cmdr. Vane', role: 'senior', displayRole: 'Compliance Lead — Full Access', password: 'praesidia2026' },
+};
+
 ipcMain.handle('auth-login', async (event, { username, password }) => {
-    if (username && password) {
-        return { success: true, token: 'mock-jwt-token-123', user: { name: 'Cmdr. Vane', role: 'L7 Access' } };
+    const account = USER_ACCOUNTS[username.toLowerCase()];
+    if (account && account.password === password) {
+        currentUserRole = account.role;
+        console.log(`[Auth] Login: ${account.name} (${account.role})`);
+        return { success: true, token: 'mock-jwt-token-123', user: { name: account.name, role: account.displayRole, rbacRole: account.role } };
     }
     return { error: 'Invalid credentials' };
+});
+
+// Get current user role (for dashboard to query)
+ipcMain.handle('get-user-role', async () => {
+    return { role: currentUserRole };
+});
+
+// Senior remediation trigger from dashboard
+ipcMain.handle('trigger-senior-remediation', async () => {
+    if (currentUserRole !== 'senior') {
+        return { error: 'Insufficient permissions — Senior access required' };
+    }
+    triggerSeniorRemediation();
+    return { success: true };
 });
 
 
@@ -410,6 +435,113 @@ function triggerSeniorRemediation() {
          .catch(err => console.error('NeMo-Claw error:', err.message));
 }
 
+// ─── Tavus Streaming Replica (Intern Lockdown without pre-made URL) ───
+function launchTavusStreamingReplica(reasoning) {
+    const axios = require('axios');
+    const TAVUS_API_KEY = process.env.TAVUS_API_KEY;
+    const TAVUS_REPLICA_ID = process.env.TAVUS_REPLICA_ID || 'r291e545fd67';
+    const TAVUS_PERSONA_ID = process.env.TAVUS_PERSONA_ID || 'pf4480a02236';
+
+    if (!TAVUS_API_KEY) {
+        console.warn('[Tavus] No API key — showing lockdown notification only');
+        new Notification({ title: 'PRAESIDIA LOCKDOWN', body: reasoning || 'Critical violation detected. Contact your supervisor.' }).show();
+        return;
+    }
+
+    axios.post('https://tavusapi.com/v2/videos', {
+        replica_id: TAVUS_REPLICA_ID,
+        persona_id: TAVUS_PERSONA_ID,
+        script: `Intern, a serious compliance breach has been detected. ${reasoning}. This session is now locked pending review.`,
+        properties: { fast: true, max_seconds: 20 }
+    }, {
+        headers: { 'x-api-key': TAVUS_API_KEY, 'Content-Type': 'application/json' }
+    })
+    .then(res => {
+        if (res.data?.hosted_url) createTavusWindow(res.data.hosted_url);
+    })
+    .catch(err => console.error('[Tavus] Streaming replica error:', err.message));
+}
+
+// ─── Omni-Search: Semantic Audit Log Search via Deepseek ───
+ipcMain.handle('omni-search', async (event, query) => {
+    const axios = require('axios');
+    const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
+
+    if (!DEEPSEEK_KEY || !query || query.length < 3) {
+        return { results: [], summary: '' };
+    }
+
+    try {
+        // Gather recent audit context
+        const logs = [];
+
+        // Pull from Supabase violations
+        const { getRecentViolations } = require('./database/supabase');
+        let dbLogs = [];
+        try { dbLogs = await getRecentViolations(50); } catch (e) { /* no violations table yet */ }
+
+        // Add mock logs as fallback context
+        const contextLogs = dbLogs.length > 0 ? dbLogs.map(l => ({
+            id: l.id, user: l.user_id, surface: l.surface, action: l.action_type,
+            verdict: l.verdict, severity: l.severity, reasoning: l.reasoning,
+            timestamp: l.created_at
+        })) : [
+            { id: 'LOG-992', user: 'System', action: 'RAG Model Synced with Supabase', timestamp: new Date().toISOString(), verdict: 'ALLOW', surface: 'system' },
+            { id: 'LOG-991', user: 'Cmdr. Vane', action: 'Uploaded Sovereign Policy V4', timestamp: new Date(Date.now() - 3600000).toISOString(), verdict: 'ALLOW', surface: 'policy' },
+            { id: 'LOG-990', user: 'Intern_14', action: 'Attempted Unsafe System Prompt', timestamp: new Date(Date.now() - 7200000).toISOString(), verdict: 'DENY', surface: 'cline' },
+        ];
+
+        // Also pull Slack analysis results if available
+        const notifyDir = getPraesidiaPath('notifications');
+        try {
+            const processed = path.join(notifyDir, '..', 'slack_processed');
+            if (fs.existsSync(processed)) {
+                const recent = fs.readdirSync(processed).filter(f => f.endsWith('.json')).slice(-20);
+                for (const f of recent) {
+                    try {
+                        const d = JSON.parse(fs.readFileSync(path.join(processed, f), 'utf8'));
+                        contextLogs.push({ user: d.user_id || 'slack-user', action: d.raw_text?.substring(0, 100), verdict: d.verdict, surface: 'slack', reasoning: d.reasoning, timestamp: d.created_at });
+                    } catch (e) {}
+                }
+            }
+        } catch (e) {}
+
+        const resp = await axios.post('https://api.deepseek.com/chat/completions', {
+            model: 'deepseek-chat',
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are Praesidia's Omni-Search engine. Given a user query and a list of audit logs, return the most relevant results. Respond with JSON only:
+{
+  "summary": "One-sentence summary of findings",
+  "results": [
+    { "id": "...", "user": "...", "action": "...", "verdict": "...", "surface": "...", "reasoning": "...", "timestamp": "...", "relevance": "high|medium|low" }
+  ]
+}
+Return max 5 results, ordered by relevance. If no matches, return empty results with a helpful summary.`
+                },
+                {
+                    role: 'user',
+                    content: `Query: "${query}"\n\nAudit Logs:\n${JSON.stringify(contextLogs, null, 2)}`
+                }
+            ],
+            temperature: 0.2,
+            max_tokens: 1000
+        }, {
+            headers: { 'Authorization': `Bearer ${DEEPSEEK_KEY}`, 'Content-Type': 'application/json' }
+        });
+
+        const content = resp.data?.choices?.[0]?.message?.content || '{}';
+        // Parse JSON from response (handle markdown code blocks)
+        const jsonStr = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        const parsed = JSON.parse(jsonStr);
+        return parsed;
+    } catch (err) {
+        console.error('[Omni-Search] Error:', err.message);
+        return { results: [], summary: 'Search error: ' + err.message };
+    }
+});
+
 // ─── Single Instance & Lifecycle ───
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -464,60 +596,47 @@ if (!gotTheLock) {
 
     setTimeout(createWindow, 2000);
 
-    // Auto-start Slack monitor as a child process + poll queue DB for results
+    // Always-on: poll notification files from slack-monitor.js → push to renderer dashboard (no token required)
+    const notifyDir = getPraesidiaPath('notifications');
+    fs.mkdirSync(notifyDir, { recursive: true });
+    setInterval(() => {
+        try {
+            const files = fs.readdirSync(notifyDir).filter(f => f.endsWith('.json'));
+            for (const file of files) {
+                const filePath = path.join(notifyDir, file);
+                try {
+                    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                    fs.unlinkSync(filePath);
+                    slackMsgCount++;
+                    console.log(`[Slack] Dashboard update: ${data.verdict} | ${data.regulation || ''}`);
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('slack-message-analyzed', { ...data, msgCount: slackMsgCount });
+                    }
+                } catch (e) { /* malformed or already deleted */ }
+            }
+        } catch (e) { /* dir not ready */ }
+    }, 1000);
+    console.log('[Slack] Notification file poller running (1s interval)');
+
+    // Auto-start Slack monitor if token exists (returning user)
     setTimeout(() => {
         const tokenPath = getPraesidiaPath('slack_tokens.json');
         console.log('[Slack] Checking for token at:', tokenPath);
         if (fs.existsSync(tokenPath)) {
-            // Don't spawn if the IPC handler already started it (dashboard beats the 5s timer)
             if (slackMonitorProcess && !slackMonitorProcess.killed) {
                 console.log('[Slack] Monitor already running (started by dashboard), skipping auto-start spawn.');
             } else {
-            console.log('[Slack] Token found, launching monitor process...');
-
-            // Launch slack-monitor.js as a child process (10s polling, rate-limit safe)
-            const { spawn } = require('child_process');
-            slackMonitorProcess = spawn('node', [path.join(__dirname, 'slack-monitor.js')], {
-                cwd: __dirname, env: process.env, stdio: ['ignore', 'pipe', 'pipe']
-            });
-            slackMonitorProcess.stdout.on('data', (d) => console.log(`[SlackMon] ${d.toString().trim()}`));
-            slackMonitorProcess.stderr.on('data', (d) => console.error(`[SlackMon-ERR] ${d.toString().trim()}`));
-            slackMonitorProcess.on('error', (e) => console.error('[Slack] Monitor spawn error:', e.message));
-            slackMonitorProcess.on('exit', (code) => {
-                console.log('[Slack] Monitor exited:', code);
-                slackMonitorProcess = null;
-            });
-            slackMonitorInterval = true; // mark as running for status checks
+                console.log('[Slack] Token found, launching monitor process...');
+                const { spawn } = require('child_process');
+                slackMonitorProcess = spawn('node', [path.join(__dirname, 'slack-monitor.js')], {
+                    cwd: __dirname, env: process.env, stdio: ['ignore', 'pipe', 'pipe']
+                });
+                slackMonitorProcess.stdout.on('data', (d) => console.log(`[SlackMon] ${d.toString().trim()}`));
+                slackMonitorProcess.stderr.on('data', (d) => console.error(`[SlackMon-ERR] ${d.toString().trim()}`));
+                slackMonitorProcess.on('error', (e) => console.error('[Slack] Monitor spawn error:', e.message));
+                slackMonitorProcess.on('exit', (code) => { console.log('[Slack] Monitor exited:', code); slackMonitorProcess = null; });
+                slackMonitorInterval = true;
             }
-
-            // Poll notification files written by slack-monitor.js (avoids SQLite ABI issues in Electron)
-            const notifyDir = getPraesidiaPath('notifications');
-            fs.mkdirSync(notifyDir, { recursive: true });
-
-            setInterval(() => {
-                try {
-                    const files = fs.readdirSync(notifyDir).filter(f => f.endsWith('.json'));
-                    for (const file of files) {
-                        const filePath = path.join(notifyDir, file);
-                        try {
-                            const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-                            fs.unlinkSync(filePath); // consume immediately
-                            slackMsgCount++;
-
-                            console.log(`[Slack] Dashboard update: ${data.verdict} | ${data.regulation || ''}`);
-
-                            if (mainWindow && !mainWindow.isDestroyed()) {
-                                mainWindow.webContents.send('slack-message-analyzed', {
-                                    ...data,
-                                    msgCount: slackMsgCount
-                                });
-                            }
-                        } catch (e) { /* file may have been deleted or malformed */ }
-                    }
-                } catch (e) { /* notifyDir not ready yet */ }
-            }, 2000);
-
-            console.log('[Slack] Notification file poller running every 2s');
         } else {
             console.log('[Slack] No token found, skipping auto-start');
         }
@@ -537,8 +656,31 @@ if (!gotTheLock) {
                 icon: path.join(__dirname, 'public', 'logo-256.png')
             }).show();
 
+            // ─── RBAC: Role-based response to violations ───
             if (verdict === 'DENY' || (level && level >= 4)) {
-                if (tavusUrl) createTavusWindow(tavusUrl);
+                if (currentUserRole === 'intern') {
+                    // INTERN: Kiosk lockdown with Tavus video
+                    console.log('[RBAC] Intern lockdown triggered');
+                    if (tavusUrl) {
+                        createTavusWindow(tavusUrl);
+                    } else {
+                        // Generate Tavus streaming replica if no pre-made URL
+                        launchTavusStreamingReplica(reasoning);
+                    }
+                    // Notify dashboard of lockdown state
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('intern-lockdown', { level, reasoning, surface });
+                    }
+                } else {
+                    // SENIOR: Show remediation option instead of lockdown
+                    console.log('[RBAC] Senior override available');
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('senior-violation-alert', {
+                            level, reasoning, surface, remediationMeta,
+                            verdict, tavusUrl
+                        });
+                    }
+                }
             }
         } else if (msg.type === 'trigger_tavus_advisor') {
             if (msg.data.url) createTavusWindow(msg.data.url);
