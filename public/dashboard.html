@@ -203,6 +203,21 @@
             </div>
 
             <div class="flex items-center gap-6">
+                <!-- Omni-Search Bar -->
+                <div class="relative" id="omni-search-wrapper">
+                    <div class="flex items-center gap-2 bg-black/30 border border-brand-border rounded-lg px-3 py-1.5 focus-within:border-brand-accent/50 transition-colors" style="width: 320px;">
+                        <svg class="w-3.5 h-3.5 text-brand-muted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" id="omni-search-input" placeholder="Ask anything... &quot;Who pushed secret keys?&quot;" class="bg-transparent text-xs text-white placeholder-brand-muted/60 focus:outline-none w-full" autocomplete="off">
+                        <div id="omni-search-spinner" class="hidden">
+                            <svg class="animate-spin w-3.5 h-3.5 text-brand-accent" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"></path></svg>
+                        </div>
+                    </div>
+                    <!-- Results dropdown -->
+                    <div id="omni-search-results" class="hidden absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl shadow-2xl shadow-black/50 z-50 overflow-hidden" style="max-height: 400px;">
+                        <div id="omni-search-content" class="p-3 space-y-2 overflow-y-auto" style="max-height: 380px;"></div>
+                    </div>
+                </div>
+
                 <!-- User Profile -->
                 <div class="flex items-center gap-3 pl-6 border-l border-brand-border">
                     <div class="text-right hidden sm:block">
@@ -666,46 +681,33 @@
             }
         }
 
+        let currentRbacRole = 'intern'; // tracks logged-in user's RBAC role
+
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const u = document.getElementById('login-username').value;
             const p = document.getElementById('login-password').value;
-            
-            // For packaged Electron (file:// protocol), validate locally.
-            // For dev server (http:// protocol), call the API.
-            const isElectron = window.location.protocol === 'file:';
-
-            if (isElectron) {
-                // Local credential check — any non-empty username/password is accepted for demo
-                if (u && p) {
-                    localStorage.setItem('praesidia_token', 'electron-local-token');
-                    document.getElementById('user-name').innerText = u;
-                    document.getElementById('user-role').innerText = 'L7 Access';
-                    loginOverlay.classList.add('hidden');
-                    loadAllData();
-                    showToast('Authorization Granted', 'Secure uplink established.');
-                } else {
-                    document.getElementById('login-error').classList.remove('hidden');
-                }
-                return;
-            }
 
             try {
-                // Native IPC Login
-                console.log(`Sending Native IPC Login Request...`);
                 const data = await window.api.login(u, p);
-                
                 if (data.error) throw new Error(data.error);
-                
+
                 localStorage.setItem('praesidia_token', data.token);
+                currentRbacRole = data.user.rbacRole || 'intern';
                 document.getElementById('user-name').innerText = data.user.name;
                 document.getElementById('user-role').innerText = data.user.role;
-                
+
+                // Style role badge by access level
+                const roleEl = document.getElementById('user-role');
+                roleEl.className = currentRbacRole === 'senior'
+                    ? 'text-[9px] text-brand-safe uppercase tracking-wider font-semibold'
+                    : 'text-[9px] text-brand-warning uppercase tracking-wider font-semibold';
+
                 loginOverlay.classList.add('hidden');
                 loadAllData();
-                showToast('Authorization Granted', 'Secure uplink established.');
+                showToast('Authorization Granted', `${data.user.name} — ${currentRbacRole === 'senior' ? 'Senior Override Access' : 'Intern Restricted Mode'}`);
             } catch (err) {
-                console.log(`Login Error [Native IPC]: ${err.message}`);
+                console.log(`Login Error: ${err.message}`);
                 document.getElementById('login-error').classList.remove('hidden');
             }
         });
@@ -993,19 +995,26 @@
         }
 
         async function connectSlack() {
-            const btn = event.target.closest('button');
-            btn.disabled = true;
-            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"/></svg> Connecting...';
+            const connectBtn = document.querySelector('#slack-connect-section button');
+            if (!connectBtn) return;
+            connectBtn.disabled = true;
+            const originalHTML = connectBtn.innerHTML;
+            connectBtn.innerHTML = '<svg class="w-4 h-4 animate-spin inline mr-2" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"/></svg> Connecting...';
 
-            const result = await window.api.slackConnect();
-
-            if (result.success) {
-                showToast('Slack Connected', `Connected to ${result.team_name}`);
-                checkSlackStatus();
-            } else {
-                showToast('Connection Failed', result.error || 'Please try again');
-                btn.disabled = false;
-                btn.innerHTML = 'Connect Slack';
+            try {
+                const result = await window.api.slackConnect();
+                if (result && result.success) {
+                    showToast('Slack Connected', `Connected to ${result.team_name}`);
+                    checkSlackStatus();
+                } else {
+                    showToast('Connection Failed', (result && result.error) || 'Please try again');
+                    connectBtn.disabled = false;
+                    connectBtn.innerHTML = originalHTML;
+                }
+            } catch (e) {
+                showToast('Connection Failed', 'Unexpected error — please try again');
+                connectBtn.disabled = false;
+                connectBtn.innerHTML = originalHTML;
             }
         }
 

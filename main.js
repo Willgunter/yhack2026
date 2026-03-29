@@ -167,7 +167,7 @@ ipcMain.handle('slack-connect', async () => {
 
     // Poll for token completion
     let attempts = 0;
-    const maxAttempts = 120; // 2 minutes
+    const maxAttempts = 60; // 60 seconds
 
     return new Promise((resolve) => {
         const poll = setInterval(async () => {
