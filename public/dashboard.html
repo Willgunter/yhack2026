@@ -506,40 +506,14 @@
                             <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zm6.313 2.521a2.528 2.528 0 0 1 2.521-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.521V8.834zm-1.271 0a2.528 2.528 0 0 1-2.521 2.521 2.528 2.528 0 0 1-2.521-2.521V2.522A2.528 2.528 0 0 1 11.355 0a2.528 2.528 0 0 1 2.521 2.522v6.312zm-2.521 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.522 2.528 2.528 0 0 1-2.521-2.522v-2.521h2.521zm0-1.271a2.528 2.528 0 0 1-2.521-2.521 2.528 2.528 0 0 1 2.521-2.521h6.313A2.528 2.528 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.521h-6.313z"/>
                         </svg>
                         <h3 class="text-lg font-bold text-white mb-2">Connect Your Slack Workspace</h3>
-                        <p class="text-brand-muted text-sm mb-6 max-w-md mx-auto">Authenticate with your Slack token, then pick which channels to monitor. No bot invite needed.</p>
+                        <p class="text-brand-muted text-sm mb-6 max-w-md mx-auto">Authenticate with your Slack token to automatically monitor all workspace channels.</p>
                         <button id="slack-connect-btn" onclick="connectSlack()" class="bg-brand-accent hover:bg-brand-accent/80 text-white px-8 py-3 rounded-lg font-semibold text-sm transition-colors inline-flex items-center gap-2">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                             Connect Slack
                         </button>
                     </div>
 
-                    <!-- Step 2: Channel Picker (shown after successful connect) -->
-                    <div id="slack-channel-picker" class="hidden glass-panel rounded-xl p-8">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-8 h-8 rounded-full bg-brand-safe/20 flex items-center justify-center">
-                                <svg class="w-4 h-4 text-brand-safe" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            </div>
-                            <div>
-                                <h3 class="text-white font-bold">Workspace Connected</h3>
-                                <p class="text-brand-muted text-xs">Select channels to monitor below</p>
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <input type="text" id="channel-search" placeholder="Search channels..." oninput="filterChannels(this.value)"
-                                class="w-full bg-black/40 border border-brand-border rounded py-2 px-3 text-sm text-white focus:outline-none focus:border-brand-accent transition-colors placeholder:text-brand-muted/50 mb-4">
-                            <div id="channel-list" class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
-                                <div class="text-brand-muted text-xs text-center py-4 col-span-2 animate-pulse">Loading channels...</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between pt-4 border-t border-brand-border">
-                            <span id="channel-selected-count" class="text-xs text-brand-muted">0 channels selected</span>
-                            <button onclick="startMonitoringSelectedChannels()" id="start-monitor-btn"
-                                class="bg-brand-safe hover:bg-brand-safe/80 text-black font-bold px-6 py-2.5 rounded-lg text-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2" disabled>
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                Start Monitoring
-                            </button>
-                        </div>
-                    </div>
+
 
                     <!-- Live Monitor (hidden until connected) -->
                     <div id="slack-live-section" class="hidden space-y-4">
@@ -1106,17 +1080,27 @@
                 console.log('[Slack] Connect result:', JSON.stringify(result));
 
                 if (result && result.success) {
-                    // Hide connect section, show channel picker
-                    document.getElementById('slack-connect-section').classList.add('hidden');
-                    document.getElementById('slack-channel-picker').classList.remove('hidden');
-                    showToast('Slack Authenticated', `Connected to ${result.team_name}. Now pick your channels.`);
-                    loadChannelPicker();
+                    showToast('Slack Authenticated', `Connected to ${result.team_name}. Starting monitor...`);
+                    
+                    // Automatically start monitoring all public channels
+                    const monResult = await window.api.slackStartMonitor([]);
+                    if (monResult && (monResult.status === 'started' || monResult.status === 'already_running')) {
+                        document.getElementById('slack-connect-section').classList.add('hidden');
+                        document.getElementById('slack-live-section').classList.remove('hidden');
+                        document.getElementById('slack-status-dot').className = 'w-2 h-2 rounded-full bg-brand-safe animate-pulse';
+                        document.getElementById('slack-status-text').textContent = 'Connected';
+                        document.getElementById('slack-status-text').className = 'text-brand-safe text-xs font-semibold uppercase tracking-wider';
+                        document.getElementById('slack-status').className = 'flex items-center gap-2 bg-brand-safe/10 border border-brand-safe/20 px-3 py-1.5 rounded-full';
+                    } else {
+                        showToast('Monitor Error', (monResult && monResult.error) || 'Could not start monitor');
+                        btn.disabled = false;
+                        btn.innerHTML = 'Connect Slack';
+                    }
                 } else {
                     const errMsg = (result && result.error) ? result.error : 'Unknown error';
-                    console.log('[Slack] Connect failed:', errMsg);
                     showToast('Connection Failed', errMsg);
                     btn.disabled = false;
-                    btn.innerHTML = '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg> Connect Slack';
+                    btn.innerHTML = 'Connect Slack';
                 }
             } catch (e) {
                 console.log('[Slack] Connect exception:', e.message);
@@ -1126,87 +1110,15 @@
             }
         }
 
-        async function loadChannelPicker() {
-            try {
-                const result = await window.api.slackGetChannels();
-                console.log('[Slack] Channels result:', JSON.stringify(result));
-                if (result.error) { showToast('Channel Error', result.error); return; }
-                allChannels = result.channels || [];
-                renderChannels(allChannels);
-            } catch (e) {
-                console.log('[Slack] Get channels error:', e.message);
-            }
-        }
-
-        function renderChannels(channels) {
-            const list = document.getElementById('channel-list');
-            if (channels.length === 0) {
-                list.innerHTML = '<div class="text-brand-muted text-xs text-center py-4 col-span-2">No public channels found</div>';
-                return;
-            }
-            list.innerHTML = channels.map(c => `
-                <label class="flex items-center gap-2 p-2.5 rounded-lg border border-brand-border bg-black/20 hover:bg-black/40 hover:border-brand-accent/40 cursor-pointer transition-all group">
-                    <input type="checkbox" value="${c.id}" onchange="toggleChannel('${c.id}')"
-                        class="w-4 h-4 rounded accent-brand-accent cursor-pointer">
-                    <div class="overflow-hidden">
-                        <div class="text-sm font-medium text-white truncate">#${c.name}</div>
-                        <div class="text-[10px] text-brand-muted">${c.member_count || 0} members</div>
-                    </div>
-                </label>
-            `).join('');
-        }
-
-        function filterChannels(query) {
-            const filtered = allChannels.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
-            renderChannels(filtered);
-        }
-
-        function toggleChannel(channelId) {
-            if (selectedChannelIds.has(channelId)) {
-                selectedChannelIds.delete(channelId);
-            } else {
-                selectedChannelIds.add(channelId);
-            }
-            const count = selectedChannelIds.size;
-            document.getElementById('channel-selected-count').textContent = `${count} channel${count !== 1 ? 's' : ''} selected`;
-            document.getElementById('start-monitor-btn').disabled = count === 0;
-        }
-
-        async function startMonitoringSelectedChannels() {
-            const btn = document.getElementById('start-monitor-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Starting...';
-
-            const channelIds = Array.from(selectedChannelIds);
-            console.log('[Slack] Starting monitor for channels:', channelIds);
-            const result = await window.api.slackStartMonitor(channelIds);
-            console.log('[Slack] Start monitor result:', JSON.stringify(result));
-
-            if (result && (result.status === 'started' || result.status === 'already_running')) {
-                document.getElementById('slack-channel-picker').classList.add('hidden');
-                document.getElementById('slack-live-section').classList.remove('hidden');
-                document.getElementById('slack-status-dot').className = 'w-2 h-2 rounded-full bg-brand-safe animate-pulse';
-                document.getElementById('slack-status-text').textContent = 'Connected';
-                document.getElementById('slack-status-text').className = 'text-brand-safe text-xs font-semibold uppercase tracking-wider';
-                document.getElementById('slack-status').className = 'flex items-center gap-2 bg-brand-safe/10 border border-brand-safe/20 px-3 py-1.5 rounded-full';
-                showToast('Monitoring Active', `Watching ${channelIds.length} channel${channelIds.length !== 1 ? 's' : ''}`);
-            } else {
-                showToast('Monitor Error', (result && result.error) || 'Could not start monitor');
-                btn.disabled = false;
-                btn.innerHTML = 'Start Monitoring';
-            }
-        }
-
         async function disconnectSlack() {
             await window.api.slackDisconnect();
-            selectedChannelIds.clear();
-            allChannels = [];
             document.getElementById('slack-connect-section').classList.remove('hidden');
-            document.getElementById('slack-channel-picker').classList.add('hidden');
             document.getElementById('slack-live-section').classList.add('hidden');
-            // Reset connect button
             const btn = document.getElementById('slack-connect-btn');
-            if (btn) { btn.disabled = false; btn.innerHTML = '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg> Connect Slack'; }
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = 'Connect Slack';
+            }
             document.getElementById('slack-status-dot').className = 'w-2 h-2 rounded-full bg-brand-muted';
             document.getElementById('slack-status-text').textContent = 'Not Connected';
             document.getElementById('slack-status-text').className = 'text-brand-muted text-xs font-semibold uppercase tracking-wider';

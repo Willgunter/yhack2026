@@ -264,25 +264,30 @@ ipcMain.handle('slack-start-monitor', async (event, selectedChannelIds) => {
     slackLastTs = String((Date.now() - 5 * 60 * 1000) / 1000);
     slackMsgCount = 0;
 
-    // Use user-selected channels; fall back to any public channels bot can access
-    let channels = Array.isArray(selectedChannelIds) && selectedChannelIds.length > 0
-        ? selectedChannelIds
-        : [];
+    // Automatically fetch all public channels
+    try {
+        const resp = await axios.get('https://slack.com/api/conversations.list', {
+            headers: { Authorization: `Bearer ${userToken}` },
+            params: { types: 'public_channel', limit: 100, exclude_archived: true }
+        });
+        
+        // If it's a bot token, it can only see channels it's in or public ones.
+        // We'll watch all public channels it can see.
+        channels = (resp.data.channels || []).map(c => c.id);
+        
+        console.log(`[Slack Monitor] Auto-discovered ${channels.length} channels to monitor.`);
+    } catch (e) {
+        console.error('[Slack Monitor] Failed to auto-discover channels:', e.message);
+        // If discovery fails but we had some IDs (unlikely here), we could proceed, 
+        // but here we'll error out to be safe.
+        return { error: 'Failed to list channels: ' + e.message };
+    }
 
     if (channels.length === 0) {
-        try {
-            const resp = await axios.get('https://slack.com/api/conversations.list', {
-                headers: { Authorization: `Bearer ${userToken}` },
-                params: { types: 'public_channel', limit: 100, exclude_archived: true }
-            });
-            // Use ALL public channels (not just is_member) so bot access works without invite
-            channels = (resp.data.channels || []).map(c => c.id);
-            console.log(`[Slack Monitor] Auto-selected ${channels.length} public channels`);
-        } catch (e) {
-            return { error: 'Failed to list channels: ' + e.message };
-        }
+        console.warn('[Slack Monitor] ⚠️  No channels found. Note: Bots must be invited to private channels.');
     }
-    console.log(`[Slack Monitor] Watching ${channels.length} channels:`, channels);
+
+    console.log(`[Slack Monitor] Starting poll for ${channels.length} channels...`);
 
     // Poll every 3 seconds for new messages across channels
     slackMonitorInterval = setInterval(async () => {
