@@ -4,7 +4,7 @@
  */
 const classifyContent = async (content) => {
   // TODO: Use NLP or prompt-based classification
-  return { type: 'code_push', sensitive: false };
+  return { type:  'code_push', sensitive: false };
 };
 
 module.exports = {

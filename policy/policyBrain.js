@@ -14,8 +14,8 @@ const anthropic = new Anthropic({
 
 // Map surfaces/actions to the most relevant skills
 const SURFACE_SKILL_MAP = {
-    github: ['claude-api'],
-    slack: ['claude-api'],
+    github:  ['claude-api'],
+    slack:  ['claude-api'],
     ui: ['branding-guidelines', 'claude-api'],
     css: ['branding-guidelines', 'claude-api'],
     design: ['branding-guidelines'],

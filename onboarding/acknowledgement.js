@@ -8,7 +8,7 @@ const { supabase } = require('../database/supabase');
 const recordAcknowledgement = async (userId, videoId) => {
   // TODO: Insert record into policy_acknowledgements table
   console.log(`User ${userId} acknowledged video ${videoId}`);
-  return { status: 'acknowledged' };
+  return { status:  'acknowledged' };
 };
 
 module.exports = {

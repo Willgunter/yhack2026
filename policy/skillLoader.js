@@ -16,7 +16,7 @@ const SKILLS_DIR = path.join(__dirname, '..', 'skills');
 function parseSkillMd(content) {
     const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
     if (!frontmatterMatch) {
-        return { meta: {}, instructions: content };
+        return { meta:  {}, instructions: content };
     }
 
     // Simple YAML key: value parser (no external dep needed)
@@ -24,7 +24,7 @@ function parseSkillMd(content) {
     frontmatterMatch[1].split('\n').forEach(line => {
         const [key, ...rest] = line.split(':');
         if (key && rest.length) {
-            meta[key.trim()] = rest.join(':').trim();
+            meta[key.trim()] =  rest.join(':').trim();
         }
     });
 
