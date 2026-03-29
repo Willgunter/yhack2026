@@ -469,6 +469,10 @@ if (!gotTheLock) {
         const tokenPath = getPraesidiaPath('slack_tokens.json');
         console.log('[Slack] Checking for token at:', tokenPath);
         if (fs.existsSync(tokenPath)) {
+            // Don't spawn if the IPC handler already started it (dashboard beats the 5s timer)
+            if (slackMonitorProcess && !slackMonitorProcess.killed) {
+                console.log('[Slack] Monitor already running (started by dashboard), skipping auto-start spawn.');
+            } else {
             console.log('[Slack] Token found, launching monitor process...');
 
             // Launch slack-monitor.js as a child process (10s polling, rate-limit safe)
@@ -484,6 +488,7 @@ if (!gotTheLock) {
                 slackMonitorProcess = null;
             });
             slackMonitorInterval = true; // mark as running for status checks
+            }
 
             // Poll the queue DB for completed results (reads from slack-monitor.js output)
             const Database = require('better-sqlite3');
