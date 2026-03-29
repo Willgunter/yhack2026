@@ -15,7 +15,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const PORT = process.env.PORT || 3005;
 const TOKEN_PATH = path.join(os.homedir(), '.praesidia', 'slack_tokens.json');
 const DB_PATH = path.join(os.homedir(), '.praesidia', 'slack_queue.db');
-const POLL_INTERVAL = 5000; // 5s — Business+ tier has higher rate limits
+const POLL_INTERVAL = 2000; // 2s — Business+ tier, demo speed
 const WORKER_INTERVAL = 3000;
 
 // ─── DATABASE SETUP ───
@@ -109,6 +109,33 @@ async function startPoller(db, userToken, userId, channels) {
                         scrubbed, JSON.stringify(piiFindings), piiFindings.length
                     );
                     console.log(`[Poller] Queued: "${msg.text.substring(0, 60)}..." (${piiFindings.length} PII)`);
+
+                    // FAST PATH: If Presidio detected credentials/keys → immediate DENY, no K2 wait
+                    const criticalTypes = ['API_KEY', 'BEARER_TOKEN', 'GITHUB_TOKEN', 'AWS_KEY', 'STRIPE_KEY', 'GENERIC_API_KEY', 'CREDIT_CARD', 'CRYPTO'];
+                    const criticalHits = piiFindings.filter(p => criticalTypes.includes(p.entity_type));
+                    if (criticalHits.length > 0) {
+                        const types = [...new Set(criticalHits.map(p => p.entity_type))].join(', ');
+                        const regulation = `Sovereign Governance Charter §2 — Credential Exposure (${types}) | GDPR Article 5(1)(f) | HIPAA §164.502`;
+                        console.log(`[Poller] FAST DENY: ${types} detected — skipping K2, firing immediately`);
+                        try {
+                            const notifyDir = path.join(os.homedir(), '.praesidia', 'notifications');
+                            if (!fs.existsSync(notifyDir)) fs.mkdirSync(notifyDir, { recursive: true });
+                            fs.writeFileSync(path.join(notifyDir, `${Date.now()}_fast_${msg.ts}.json`), JSON.stringify({
+                                text: msg.text.substring(0, 100),
+                                channel: channelId,
+                                timestamp: msg.ts,
+                                verdict: 'DENY',
+                                reasoning: `Presidio detected exposed credentials: ${types}. Immediate escalation per Sovereign Charter §2.`,
+                                regulation,
+                                rewrite: 'Remove all credentials. Use environment variables or a secrets manager.',
+                                pii: piiFindings,
+                                level: 5
+                            }));
+                            // PowerShell popup
+                            const body = `CREDENTIAL EXPOSURE: ${types} detected. ${regulation}`.replace(/'/g, '').substring(0, 150);
+                            require('child_process').exec(`powershell -command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('${body}', 'Praesidia: VIOLATION DETECTED', 'OK', 'Warning')"`, () => {});
+                        } catch (e) { /* non-critical */ }
+                    }
                 }
             } catch (e) { /* channel error */ }
         }

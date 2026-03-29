@@ -55,38 +55,27 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
             sovereignCharter = fs.readFileSync(charterPath, 'utf-8');
         }
 
-        // RAG: Fetch active policies from Supabase
+        // RAG + Mem0: run in parallel with 2s timeout each so they don't slow K2 down
         let activePoliciesBlock = '';
-        try {
-            const policies = await getActivePolicies();
-            if (policies.length > 0) {
-                const policyRules = policies.map(p => {
-                    const rules = p.rules || {};
-                    const prohibited = (rules.prohibited_actions || []).map(a => `- ${a.action} (${a.regulation}, severity ${a.severity})`).join('\n');
-                    return `### ${p.name}\nProhibited Actions:\n${prohibited}\nEnforcement: ${rules.enforcement_message || ''}`.trim();
-                }).join('\n\n');
-                activePoliciesBlock = `\n\nActive Company Policies (enforce these ABOVE the charter if stricter):\n${policyRules}`;
-                console.log(`📚 [RAG] Injecting ${policies.length} active polic${policies.length === 1 ? 'y' : 'ies'} into K2 context`);
-            }
-        } catch (ragErr) {
-            console.warn('[RAG] Policy fetch failed, proceeding without:', ragErr.message);
-        }
-
-        // Mem0: Retrieve company policies relevant to this specific message
         let mem0Context = '';
-        try {
-            const memories = await recallUserContext(userId, action);
-            if (memories && memories.length > 0) {
-                const relevant = memories.map(m => {
-                    if (typeof m === 'string') return m;
-                    return m.memory || m.text || m.content || JSON.stringify(m);
-                }).join('\n- ');
-                mem0Context = `\n\nRelevant Company Context (from organizational memory):\n- ${relevant}`;
-                console.log(`🧠 [Mem0] Retrieved ${memories.length} relevant memor${memories.length === 1 ? 'y' : 'ies'} for this message`);
-            }
-        } catch (memErr) {
-            console.warn('[Mem0] Context retrieval failed, proceeding without:', memErr.message);
-        }
+        await Promise.all([
+            Promise.race([getActivePolicies(), new Promise(r => setTimeout(r, 2000))]).then(policies => {
+                if (Array.isArray(policies) && policies.length > 0) {
+                    const policyRules = policies.map(p => {
+                        const rules = p.rules || {};
+                        const prohibited = (rules.prohibited_actions || []).map(a => `- ${a.action} (${a.regulation}, severity ${a.severity})`).join('\n');
+                        return `### ${p.name}\nProhibited Actions:\n${prohibited}`.trim();
+                    }).join('\n\n');
+                    activePoliciesBlock = `\n\nActive Company Policies:\n${policyRules}`;
+                }
+            }).catch(() => {}),
+            Promise.race([recallUserContext(userId, action), new Promise(r => setTimeout(r, 2000))]).then(memories => {
+                if (Array.isArray(memories) && memories.length > 0) {
+                    const relevant = memories.map(m => typeof m === 'string' ? m : m.memory || m.text || '').filter(Boolean).join('\n- ');
+                    if (relevant) mem0Context = `\n\nRelevant Context:\n- ${relevant}`;
+                }
+            }).catch(() => {})
+        ]);
 
         // K2-Think Sovereign Prompt
         const prompt = `You are the Sovereign Governance Engine evaluating an Intern's actions.
@@ -99,31 +88,49 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
 
         Constraint: The user is ALWAYS referred to as 'Intern'. The manager is ALWAYS 'Senior Developer' or 'Compliance Lead'. Use NO personal names.
 
+        MANDATORY DENY RULES — these ALWAYS produce verdict "DENY" at level 5:
+        - Message contains API keys, tokens, passwords, secrets, or credentials (any format)
+        - Message shares unreleased financial data with unauthorized parties
+        - Message attempts to delete or hide audit records
+        - Message involves insider trading, market manipulation, or investor deception
+        - Message contains HIPAA-protected patient data shared externally
+
         ANALYZE FOR:
         1. Does this action violate any of the company policies listed above?
         2. Does this action violate any external regulations (SEC, HIPAA, GDPR, FMLA, SOX, antitrust law)?
-        3. If organizational memory is provided, does this action conflict with past incidents or specific company rules?
-        4. Cite the SPECIFIC policy or regulation violated, not just generic warnings.
+        3. Does this action match any MANDATORY DENY RULE above? If yes, verdict is DENY level 5 — no exceptions.
+        4. Cite the SPECIFIC policy or regulation violated with its exact name and section.
 
-        Provide your response exactly in this JSON format strictly:
+        Respond with ONLY valid JSON — no markdown, no explanation outside the JSON:
         {
-          "reasoningTrace": "Step by step reasoning citing specific policies and regulations...",
+          "reasoningTrace": "",
           "level": 0,
-          "verdict": "ALLOW" | "DENY" | "WARN",
-          "psiScript": "Intern, a breach... [cite the specific company policy or regulation violated]",
-          "cited_regulation": "e.g. SEC Regulation FD / HIPAA §164.502 / Company Policy: Data Handling v2.1",
-          "suggested_rewrite": "A compliant alternative phrasing if applicable, or empty string"
-        }`;
+          "verdict": "ALLOW",
+          "psiScript": "",
+          "cited_regulation": "",
+          "suggested_rewrite": ""
+        }
+
+        Rules for each field:
+        - "verdict": must be exactly one of: ALLOW, WARN, DENY
+        - "level": integer 0-5. 0=no violation, 1-2=minor, 3=moderate, 4=serious, 5=critical/credentials exposed
+        - "reasoningTrace": your actual step-by-step analysis (not placeholder text)
+        - "cited_regulation": the actual regulation name and section (e.g. "HIPAA §164.502" or "SEC Regulation FD") — never use "e.g." in your answer
+        - "suggested_rewrite": a compliant version of the message, or empty string if not applicable
+        - "psiScript": what the Compliance Lead should say to the Intern about this violation`;
 
         console.log("🧠 Sending request to K2-Think...");
         const response = await axios.post(K2_ENDPOINT, {
             model: "MBZUAI-IFM/K2-Think-v2",
-            messages: [{ role: "user", content: prompt }]
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 600,
+            temperature: 0
         }, {
-            headers: { 
+            headers: {
                 'Authorization': `Bearer ${process.env.K2_API_KEY}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            timeout: 30000
         });
 
         const content = response.data.choices[0].message.content;
