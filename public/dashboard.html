@@ -118,14 +118,19 @@
                     <label class="block text-xs text-brand-muted uppercase mb-1">Commander ID</label>
                     <input type="text" id="login-username" value="admin" class="w-full bg-black/40 border border-brand-border rounded py-2.5 px-3 text-sm focus:outline-none focus:border-brand-accent text-white" required>
                 </div>
-                <div class="mb-6">
+                <div class="mb-4">
                     <label class="block text-xs text-brand-muted uppercase mb-1">Passcode</label>
                     <input type="password" id="login-password" value="praesidia2026" class="w-full bg-black/40 border border-brand-border rounded py-2.5 px-3 text-sm focus:outline-none focus:border-brand-accent text-white" required>
+                </div>
+                <div class="mb-6 flex gap-2">
+                    <button type="button" onclick="document.getElementById('login-username').value='intern';document.getElementById('login-password').value='intern2026';" class="flex-1 text-[9px] uppercase tracking-wider py-1.5 rounded bg-brand-warning/10 border border-brand-warning/30 text-brand-warning hover:bg-brand-warning/20 transition-colors">Intern</button>
+                    <button type="button" onclick="document.getElementById('login-username').value='senior';document.getElementById('login-password').value='senior2026';" class="flex-1 text-[9px] uppercase tracking-wider py-1.5 rounded bg-brand-safe/10 border border-brand-safe/30 text-brand-safe hover:bg-brand-safe/20 transition-colors">Senior Dev</button>
+                    <button type="button" onclick="document.getElementById('login-username').value='admin';document.getElementById('login-password').value='praesidia2026';" class="flex-1 text-[9px] uppercase tracking-wider py-1.5 rounded bg-brand-accent/10 border border-brand-accent/30 text-brand-accent hover:bg-brand-accent/20 transition-colors">Admin</button>
                 </div>
                 <button type="submit" class="w-full bg-brand-accent hover:bg-blue-600 text-white font-bold py-2.5 rounded shadow-lg shadow-brand-accent/30 transition-colors uppercase tracking-widest text-xs">
                     Authorize Uplink
                 </button>
-                <div id="login-error" class="hidden text-brand-critical text-xs mt-3 text-center">Invalid credentials.</div>
+                <div id="login-error" class="hidden text-brand-critical text-xs mt-3 text-center">Invalid credentials. Use: intern / senior / admin</div>
             </form>
         </div>
     </div>
@@ -1034,32 +1039,47 @@
             window.api.onSlackMessage((data) => {
                 document.getElementById('slack-msg-count').textContent = `${data.msgCount} messages scanned`;
 
-                // Only show flagged messages in the feed
                 if (data.verdict === 'DENY' || data.verdict === 'WARN') {
                     const feed = document.getElementById('slack-live-feed');
-                    // Clear the "listening" placeholder on first message
                     if (feed.querySelector('.text-center')) feed.innerHTML = '';
 
                     const colors = {
-                        DENY: { border: 'border-brand-critical', bg: 'bg-brand-critical/5', badge: 'bg-brand-critical/10 text-brand-critical', label: 'DENIED' },
+                        DENY: { border: 'border-brand-critical', bg: 'bg-brand-critical/5', badge: 'bg-brand-critical/10 text-brand-critical', label: 'VIOLATION' },
                         WARN: { border: 'border-brand-warning', bg: 'bg-brand-warning/5', badge: 'bg-brand-warning/10 text-brand-warning', label: 'WARNING' }
                     };
                     const c = colors[data.verdict] || colors.WARN;
 
-                    const card = document.createElement('div');
-                    card.className = `${c.bg} border ${c.border} rounded-lg p-4 animate-pulse-once`;
-                    card.innerHTML = `
+                    const piiTags = (data.pii || []).map(p => {
+                        const label = p.entity_type || p.type || 'PII';
+                        return `<span class="text-[10px] px-2 py-0.5 rounded bg-brand-critical/10 text-brand-critical">${label}</span>`;
+                    }).join('');
+
+                    const innerHtml = `
                         <div class="flex items-center justify-between mb-2">
                             <span class="${c.badge} px-2 py-0.5 rounded text-[10px] font-bold uppercase">${c.label}</span>
                             <span class="text-[10px] text-brand-muted">${new Date().toLocaleTimeString()}</span>
                         </div>
-                        <p class="text-sm text-white font-mono mb-2">"${data.text}"</p>
+                        <p class="text-sm text-white font-mono mb-2">"${(data.text || '').substring(0, 120)}"</p>
                         ${data.regulation ? `<p class="text-xs text-brand-accent mb-1">Cited: ${data.regulation}</p>` : ''}
-                        <p class="text-xs text-brand-muted">${data.reasoning}</p>
+                        <p class="text-xs text-brand-muted mb-1">${data.reasoning || ''}</p>
                         ${data.rewrite ? `<div class="mt-2 text-xs text-brand-safe bg-brand-safe/5 border border-brand-safe/20 rounded p-2"><strong>Suggested:</strong> ${data.rewrite}</div>` : ''}
-                        ${data.pii && data.pii.length > 0 ? `<div class="mt-2 flex gap-2">${data.pii.map(p => `<span class="text-[10px] px-2 py-0.5 rounded bg-brand-critical/10 text-brand-critical">${p.type}</span>`).join('')}</div>` : ''}
+                        ${piiTags ? `<div class="mt-2 flex flex-wrap gap-1">${piiTags}</div>` : ''}
                     `;
-                    feed.prepend(card);
+
+                    // Use slack_ts as key — update existing card if present (fast path → K2 enrichment)
+                    const cardId = `slack-card-${(data.timestamp || '').replace(/\./g, '-')}`;
+                    let card = document.getElementById(cardId);
+                    if (card) {
+                        // Enrich existing card with K2 reasoning (no duplicate)
+                        card.className = `${c.bg} border ${c.border} rounded-lg p-4`;
+                        card.innerHTML = innerHtml;
+                    } else {
+                        card = document.createElement('div');
+                        card.id = cardId;
+                        card.className = `${c.bg} border ${c.border} rounded-lg p-4`;
+                        card.innerHTML = innerHtml;
+                        feed.prepend(card);
+                    }
                 }
             });
         }
@@ -1228,6 +1248,117 @@
                     <span class="text-[10px] text-brand-muted/50">${h.time}</span>
                 </div>`;
             }).join('');
+        }
+
+        // ─── RBAC: Role-Based Violation Responses ───
+        if (window.api?.onInternLockdown) {
+            window.api.onInternLockdown((data) => {
+                showToast('LOCKDOWN ACTIVE', `Level ${data.level} breach on ${data.surface}. Session locked.`);
+                const overlay = document.createElement('div');
+                overlay.id = 'intern-lockdown-overlay';
+                overlay.className = 'fixed inset-0 z-[60] flex items-center justify-center';
+                overlay.style.cssText = 'backdrop-filter: blur(20px); background: rgba(225,29,72,0.15);';
+                overlay.innerHTML = `
+                    <div class="glass-panel p-10 rounded-2xl max-w-lg text-center border border-brand-critical/30">
+                        <div class="w-16 h-16 rounded-full bg-brand-critical/20 flex items-center justify-center mx-auto mb-6">
+                            <svg class="w-8 h-8 text-brand-critical" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-3">SESSION LOCKED</h2>
+                        <p class="text-brand-muted mb-4">${data.reasoning || 'Critical compliance violation detected.'}</p>
+                        <p class="text-xs text-brand-critical uppercase tracking-wider font-bold">Awaiting Tavus remediation video...</p>
+                        <p class="text-[10px] text-brand-muted mt-4">Contact your supervisor for re-authorization.</p>
+                    </div>`;
+                document.body.appendChild(overlay);
+            });
+        }
+
+        if (window.api?.onSeniorViolationAlert) {
+            window.api.onSeniorViolationAlert((data) => {
+                showToast('Violation Detected', `Level ${data.level} on ${data.surface} — Remediation available`);
+                const existing = document.getElementById('senior-remediation-banner');
+                if (existing) existing.remove();
+                const banner = document.createElement('div');
+                banner.id = 'senior-remediation-banner';
+                banner.className = 'fixed top-16 left-0 right-0 z-40 px-8 py-0';
+                banner.innerHTML = `
+                    <div class="max-w-6xl mx-auto bg-gradient-to-r from-brand-warning/10 to-brand-critical/10 border border-brand-warning/30 rounded-lg px-6 py-3 flex items-center justify-between mt-2" style="backdrop-filter: blur(10px);">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-brand-warning/20 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-brand-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+                            </div>
+                            <div>
+                                <span class="text-xs font-bold text-white">Level ${data.level} Violation — ${(data.surface||'').toUpperCase()}</span>
+                                <p class="text-[10px] text-brand-muted">${(data.reasoning||'').substring(0, 120)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="window.api.triggerRemediation(); this.closest('#senior-remediation-banner').remove();" class="bg-brand-accent hover:bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded transition-colors uppercase tracking-wider">Remediate</button>
+                            <button onclick="this.closest('#senior-remediation-banner').remove();" class="text-brand-muted hover:text-white text-xs px-3 py-2 transition-colors">Dismiss</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(banner);
+            });
+        }
+
+        // ─── OMNI-SEARCH: Semantic Audit Log Search ───
+        (function initOmniSearch() {
+            const input = document.getElementById('omni-search-input');
+            const resultsEl = document.getElementById('omni-search-results');
+            const contentEl = document.getElementById('omni-search-content');
+            const spinner = document.getElementById('omni-search-spinner');
+            if (!input || !window.api?.omniSearch) return;
+
+            let debounceTimer = null;
+
+            input.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                const q = input.value.trim();
+                if (q.length < 3) { resultsEl.classList.add('hidden'); spinner.classList.add('hidden'); return; }
+
+                spinner.classList.remove('hidden');
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const data = await window.api.omniSearch(q);
+                        spinner.classList.add('hidden');
+                        let html = '';
+                        if (data.summary) html += `<div class="px-3 py-2 border-b border-brand-border"><p class="text-xs text-brand-accent">${data.summary}</p></div>`;
+                        if (data.results?.length) {
+                            data.results.forEach(r => {
+                                const vc = r.verdict === 'ALLOW' ? 'text-brand-safe' : r.verdict === 'WARN' ? 'text-brand-warning' : 'text-brand-critical';
+                                html += `<div class="px-3 py-2.5 hover:bg-white/5 rounded-lg transition-colors cursor-pointer">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-bold text-[10px] uppercase ${vc}">${r.verdict||'—'}</span>
+                                        <span class="text-[10px] text-brand-muted">${r.surface||''}</span>
+                                        <span class="text-[10px] text-brand-muted ml-auto">${r.timestamp ? new Date(r.timestamp).toLocaleString() : ''}</span>
+                                    </div>
+                                    <p class="text-xs text-white">${r.action||r.user||''}</p>
+                                    ${r.reasoning ? `<p class="text-[10px] text-brand-muted mt-1 truncate">${r.reasoning}</p>` : ''}
+                                </div>`;
+                            });
+                        }
+                        if (!data.results?.length && !data.summary) html = '<p class="text-xs text-brand-muted text-center py-4">No results found.</p>';
+                        html += `<div class="px-3 py-2 border-t border-brand-border"><button onclick="switchToAuditView()" class="text-[10px] text-brand-accent hover:text-white uppercase tracking-wider transition-colors">Open Audit Log View &rarr;</button></div>`;
+                        contentEl.innerHTML = html;
+                        resultsEl.classList.remove('hidden');
+                    } catch (err) {
+                        spinner.classList.add('hidden');
+                        contentEl.innerHTML = `<p class="text-xs text-brand-critical text-center py-4">Search error</p>`;
+                        resultsEl.classList.remove('hidden');
+                    }
+                }, 800);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!document.getElementById('omni-search-wrapper').contains(e.target)) resultsEl.classList.add('hidden');
+            });
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { resultsEl.classList.add('hidden'); switchToAuditView(); } });
+        })();
+
+        function switchToAuditView() {
+            const navItems = document.querySelectorAll('.nav-item, .top-nav-item');
+            const views = document.querySelectorAll('.view-section');
+            navItems.forEach(nav => nav.classList.toggle('active', nav.getAttribute('data-target') === 'view-risk'));
+            views.forEach(view => view.classList.toggle('active', view.id === 'view-risk'));
         }
 
         // ─── INITIALIZATION ───
