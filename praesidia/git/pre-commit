@@ -1,0 +1,85 @@
+#!/bin/bash
+# Praesidia pre-commit hook
+# Scans staged changes for PII, secrets, and compliance issues
+
+DECISION_FILE="/tmp/praesidia_decision"
+FINDINGS_FILE="/tmp/praesidia_findings.json"
+REVIEW_URL="http://localhost:5001/review"
+TIMEOUT=60
+
+# Clean up any stale decision file
+rm -f "$DECISION_FILE"
+
+echo ""
+echo "========================================"
+echo "  Praesidia — scanning staged changes..."
+echo "========================================"
+echo ""
+
+# Run the Python scanner
+RESULT=$(python -m praesidia.git.hook 2>&1)
+EXIT_CODE=$?
+
+echo "$RESULT"
+
+# Check if scanner found issues
+if echo "$RESULT" | grep -q "^CLEAR"; then
+    echo ""
+    echo "Praesidia: All clear"
+    echo ""
+    exit 0
+fi
+
+if echo "$RESULT" | grep -q "^BLOCKED"; then
+    echo ""
+    echo "Praesidia: Issues detected — opening review gate..."
+    echo ""
+
+    # Open the review page in the default browser
+    if command -v xdg-open &> /dev/null; then
+        xdg-open "$REVIEW_URL" 2>/dev/null &
+    elif command -v open &> /dev/null; then
+        open "$REVIEW_URL" 2>/dev/null &
+    elif command -v start &> /dev/null; then
+        start "$REVIEW_URL" 2>/dev/null &
+    else
+        echo "Please open $REVIEW_URL in your browser to review findings."
+    fi
+
+    # Poll for decision
+    ELAPSED=0
+    while [ $ELAPSED -lt $TIMEOUT ]; do
+        if [ -f "$DECISION_FILE" ]; then
+            DECISION=$(cat "$DECISION_FILE")
+            rm -f "$DECISION_FILE"
+
+            if [ "$DECISION" = "APPROVED" ]; then
+                echo ""
+                echo "Praesidia: Approved — commit proceeding"
+                echo ""
+                exit 0
+            elif [ "$DECISION" = "BLOCKED" ]; then
+                echo ""
+                echo "Praesidia: Blocked — commit aborted"
+                echo ""
+                exit 1
+            fi
+        fi
+
+        sleep 0.5
+        ELAPSED=$((ELAPSED + 1))
+    done
+
+    # Timeout — default to block
+    echo ""
+    echo "Praesidia: Review timed out after ${TIMEOUT}s — commit blocked"
+    echo ""
+    rm -f "$DECISION_FILE"
+    exit 1
+fi
+
+# If scanner itself failed, don't block
+echo ""
+echo "Praesidia: Scanner encountered an error — allowing commit"
+echo ""
+exit 0
