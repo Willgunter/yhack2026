@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
   // User token comes from authed_user.access_token (not top-level access_token)
   const userToken = data.authed_user?.access_token || data.access_token;
 
-  setTokens(state, {
+  await setTokens(state, {
     bot_token: userToken,  // "bot_token" key reused but holds user token
     team_name: data.team?.name || "Workspace",
     team_id: data.team?.id || "",

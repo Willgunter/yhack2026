@@ -9,12 +9,12 @@ export async function GET(req: NextRequest) {
   }
 
   // Check if tokens are ready (without consuming them)
-  if (!hasTokens(session)) {
+  if (!(await hasTokens(session))) {
     return NextResponse.json({ status: "pending" });
   }
 
   // Retrieve and consume tokens (one-time retrieval)
-  const tokens = getTokens(session);
+  const tokens = await getTokens(session);
   if (!tokens) {
     return NextResponse.json({ status: "pending" });
   }
