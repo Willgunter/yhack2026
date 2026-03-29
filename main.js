@@ -125,8 +125,14 @@ ipcMain.handle('auth-login', async (event, { username, password }) => {
 // ─── SLACK OAUTH & LIVE MONITORING ───
 const SLACK_OAUTH_BASE = 'https://praesidia.dev/api/slack';
 let slackMonitorInterval = null;
+let slackMonitorProcess = null; // track the spawned slack-monitor.js process
 let slackLastTs = null;
 let slackMsgCount = 0;
+
+// Helper: get praesidia token path using Electron's app.getPath (more reliable on Windows)
+function getPraesidiaPath(...parts) {
+    return path.join(app.getPath('home'), '.praesidia', ...parts);
+}
 
 // 9. Slack Connect - opens browser for OAuth
 ipcMain.handle('slack-connect', async () => {
@@ -145,8 +151,7 @@ ipcMain.handle('slack-connect', async () => {
                 const resp = await axios.get(`${SLACK_OAUTH_BASE}/status?session=${sessionId}`);
                 if (resp.data.status === 'connected') {
                     clearInterval(poll);
-                    // Save tokens locally
-                    const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+                    const tokenPath = getPraesidiaPath('slack_tokens.json');
                     fs.mkdirSync(path.dirname(tokenPath), { recursive: true });
                     fs.writeFileSync(tokenPath, JSON.stringify(resp.data, null, 2));
                     resolve({ success: true, team_name: resp.data.team_name, team_id: resp.data.team_id });
@@ -155,7 +160,7 @@ ipcMain.handle('slack-connect', async () => {
 
             if (attempts >= maxAttempts) {
                 clearInterval(poll);
-                resolve({ error: 'OAuth timed out' });
+                resolve({ error: 'OAuth timed out after 2 minutes' });
             }
         }, 1000);
     });
@@ -163,132 +168,66 @@ ipcMain.handle('slack-connect', async () => {
 
 // 10. Slack Status - check if connected
 ipcMain.handle('slack-status', async () => {
-    const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+    const tokenPath = getPraesidiaPath('slack_tokens.json');
     if (fs.existsSync(tokenPath)) {
         const data = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-        return { connected: true, team_name: data.team_name, team_id: data.team_id, monitoring: !!slackMonitorInterval };
+        const isRunning = !!(slackMonitorInterval || (slackMonitorProcess && !slackMonitorProcess.killed));
+        return { connected: true, team_name: data.team_name, team_id: data.team_id, monitoring: isRunning };
     }
     return { connected: false };
 });
 
-// 11. Slack Start Monitor - poll for new messages and run pipeline
+// 11. Slack Start Monitor — delegates to slack-monitor.js (queue-based, 10s polling, rate-limit safe)
 ipcMain.handle('slack-start-monitor', async () => {
-    const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+    const tokenPath = getPraesidiaPath('slack_tokens.json');
     if (!fs.existsSync(tokenPath)) return { error: 'Not connected' };
 
-    const tokens = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-    const userToken = tokens.bot_token; // This is actually a user token (xoxp-)
-    const userId = tokens.authed_user_id;
-
+    // Don't start twice
+    if (slackMonitorProcess && !slackMonitorProcess.killed) {
+        return { status: 'already_running' };
+    }
     if (slackMonitorInterval) return { status: 'already_running' };
 
-    slackLastTs = String((Date.now() - 5 * 60 * 1000) / 1000); // Look back 5 minutes
-    slackMsgCount = 0;
+    console.log('[Slack] Starting queue-based monitor (slack-monitor.js)...');
+    const { spawn } = require('child_process');
+    slackMonitorProcess = spawn('node', [path.join(__dirname, 'slack-monitor.js')], {
+        cwd: __dirname,
+        env: process.env,
+        stdio: ['ignore', 'pipe', 'pipe']
+    });
 
-    // Get list of channels the user is in
-    let channels = [];
-    try {
-        const resp = await axios.get('https://slack.com/api/conversations.list', {
-            headers: { Authorization: `Bearer ${userToken}` },
-            params: { types: 'public_channel', limit: 100 }
-        });
-        if (!resp.data.ok) {
-            console.error('[Slack Monitor] Channel list error:', resp.data.error);
-            return { error: 'Slack API error: ' + resp.data.error };
-        }
-        channels = (resp.data.channels || []).filter(c => c.is_member).map(c => c.id);
-        console.log(`[Slack Monitor] Watching ${channels.length} channels:`, channels);
-    } catch (e) {
-        console.error('[Slack Monitor] Failed to list channels:', e.message);
-        return { error: 'Failed to list channels: ' + e.message };
-    }
+    slackMonitorProcess.stdout.on('data', (d) => console.log(`[SlackMon] ${d.toString().trim()}`));
+    slackMonitorProcess.stderr.on('data', (d) => console.error(`[SlackMon-ERR] ${d.toString().trim()}`));
+    slackMonitorProcess.on('exit', (code) => {
+        console.log('[Slack] Monitor process exited:', code);
+        slackMonitorProcess = null;
+    });
+    slackMonitorProcess.on('error', (e) => console.error('[Slack] Monitor spawn error:', e.message));
 
-    // Poll every 3 seconds for new messages across channels
-    slackMonitorInterval = setInterval(async () => {
-        for (const channelId of channels) {
-            try {
-                const resp = await axios.get('https://slack.com/api/conversations.history', {
-                    headers: { Authorization: `Bearer ${userToken}` },
-                    params: { channel: channelId, oldest: slackLastTs, limit: 10 }
-                });
+    // Mark as "running" for status checks
+    slackMonitorInterval = true;
 
-                const messages = (resp.data.messages || []).filter(m =>
-                    m.user === userId && !m.subtype && (m.text || '').length >= 50
-                );
-
-                for (const msg of messages) {
-                    slackMsgCount++;
-                    slackLastTs = msg.ts;
-
-                    // Run through pipeline: Presidio → K2
-                    let scrubResult = { scrubbed_text: msg.text, pii_findings: [] };
-                    try {
-                        const scrubResp = await axios.post('http://localhost:5001/scan', {
-                            content: msg.text, source: 'slack', author: userId
-                        });
-                        scrubResult.scrubbed_text = scrubResp.data.scrubbed_content || msg.text;
-                        scrubResult.pii_findings = scrubResp.data.pii_findings || [];
-                    } catch (e) { /* Presidio not running, use raw */ }
-
-                    // K2 analysis
-                    let k2Result = {};
-                    try {
-                        const k2Resp = await axios.post(`http://127.0.0.1:${PORT}/api/slack/intercept`, {
-                            action: scrubResult.scrubbed_text, userId: userId
-                        }, { timeout: 45000 });
-                        k2Result = k2Resp.data;
-                        console.log(`[Slack Monitor] K2 verdict: ${k2Result.verdict}`)
-                    } catch (e) {
-                        k2Result = { verdict: 'ERROR', reasoning: 'K2 unreachable' };
-                    }
-
-                    // Send to renderer
-                    if (mainWindow && !mainWindow.isDestroyed()) {
-                        mainWindow.webContents.send('slack-message-analyzed', {
-                            text: msg.text.substring(0, 100) + (msg.text.length > 100 ? '...' : ''),
-                            channel: channelId,
-                            timestamp: msg.ts,
-                            verdict: k2Result.verdict || 'UNKNOWN',
-                            reasoning: k2Result.thought_process || k2Result.reasoning || '',
-                            regulation: k2Result.cited_regulation || '',
-                            rewrite: k2Result.suggested_rewrite || '',
-                            pii: scrubResult.pii_findings,
-                            msgCount: slackMsgCount
-                        });
-                    }
-
-                    // Desktop notification for DENY/WARN
-                    if (k2Result.verdict === 'DENY' || k2Result.verdict === 'WARN') {
-                        new Notification({
-                            title: `Praesidia: ${k2Result.verdict === 'DENY' ? 'Violation' : 'Warning'} Detected`,
-                            body: k2Result.thought_process || k2Result.reasoning || 'Your Slack message was flagged.',
-                            icon: path.join(__dirname, 'public', 'logo-256.png')
-                        }).show();
-                    }
-                }
-            } catch (e) { console.error(`[Slack Monitor] Channel ${channelId} error:`, e.message); }
-        }
-    }, 3000);
-
-    return { status: 'started', channels: channels.length };
+    return { status: 'started' };
 });
 
 // 12. Slack Stop Monitor
 ipcMain.handle('slack-stop-monitor', async () => {
-    if (slackMonitorInterval) {
-        clearInterval(slackMonitorInterval);
-        slackMonitorInterval = null;
+    if (slackMonitorProcess && !slackMonitorProcess.killed) {
+        slackMonitorProcess.kill();
+        slackMonitorProcess = null;
     }
+    slackMonitorInterval = null;
     return { status: 'stopped' };
 });
 
 // 13. Slack Disconnect
 ipcMain.handle('slack-disconnect', async () => {
-    if (slackMonitorInterval) {
-        clearInterval(slackMonitorInterval);
-        slackMonitorInterval = null;
+    if (slackMonitorProcess && !slackMonitorProcess.killed) {
+        slackMonitorProcess.kill();
+        slackMonitorProcess = null;
     }
-    const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+    slackMonitorInterval = null;
+    const tokenPath = getPraesidiaPath('slack_tokens.json');
     if (fs.existsSync(tokenPath)) fs.unlinkSync(tokenPath);
     return { status: 'disconnected' };
 });
@@ -527,23 +466,28 @@ if (!gotTheLock) {
 
     // Auto-start Slack monitor as a child process + poll queue DB for results
     setTimeout(() => {
-        const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+        const tokenPath = getPraesidiaPath('slack_tokens.json');
+        console.log('[Slack] Checking for token at:', tokenPath);
         if (fs.existsSync(tokenPath)) {
             console.log('[Slack] Token found, launching monitor process...');
 
-            // Launch slack-monitor.js as a child process
+            // Launch slack-monitor.js as a child process (10s polling, rate-limit safe)
             const { spawn } = require('child_process');
-            const monitorProcess = spawn('node', [path.join(__dirname, 'slack-monitor.js')], {
+            slackMonitorProcess = spawn('node', [path.join(__dirname, 'slack-monitor.js')], {
                 cwd: __dirname, env: process.env, stdio: ['ignore', 'pipe', 'pipe']
             });
-            monitorProcess.stdout.on('data', (d) => console.log(`[SlackMon] ${d.toString().trim()}`));
-            monitorProcess.stderr.on('data', (d) => console.error(`[SlackMon-ERR] ${d.toString().trim()}`));
-            monitorProcess.on('error', (e) => console.error('[Slack] Monitor spawn error:', e.message));
-            monitorProcess.on('exit', (code) => console.log('[Slack] Monitor exited:', code));
+            slackMonitorProcess.stdout.on('data', (d) => console.log(`[SlackMon] ${d.toString().trim()}`));
+            slackMonitorProcess.stderr.on('data', (d) => console.error(`[SlackMon-ERR] ${d.toString().trim()}`));
+            slackMonitorProcess.on('error', (e) => console.error('[Slack] Monitor spawn error:', e.message));
+            slackMonitorProcess.on('exit', (code) => {
+                console.log('[Slack] Monitor exited:', code);
+                slackMonitorProcess = null;
+            });
+            slackMonitorInterval = true; // mark as running for status checks
 
-            // Poll the queue DB for completed results
+            // Poll the queue DB for completed results (reads from slack-monitor.js output)
             const Database = require('better-sqlite3');
-            const queueDbPath = path.join(require('os').homedir(), '.praesidia', 'slack_queue.db');
+            const queueDbPath = getPraesidiaPath('slack_queue.db');
             let lastNotifiedId = 0;
 
             setInterval(() => {
