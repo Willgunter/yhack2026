@@ -45,7 +45,7 @@ app.get('/', (req, res) => {
  */
 async function handleInterception(req, res, surface) {
   try {
-    const { action, userId } = req.body;
+    const { action,  userId } = req.body;
 
     // 1. Run the DeepSeek R1 Reasoning
     const decision = await semanticRBAC(action, userId, surface);
@@ -53,7 +53,7 @@ async function handleInterception(req, res, surface) {
     // 2. Broadcast to Chrome Extension via WebSocket
     if (decision.verdict === 'DENY' || decision.verdict === 'WARN') {
         console.log(`📡 [Real-time Alert]: Broadcasting ${decision.verdict} to extensions...`);
-        const payload = {
+        const payload =  {
             surface,
             userId,
             verdict: decision.verdict,

@@ -32,11 +32,11 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 function extractTextFromFile(filePath) {
     const ext = path.extname(filePath).toLowerCase();
     
-    if (['.md', '.txt'].includes(ext)) {
+    if (['.md',  '.txt'].includes(ext)) {
         return fs.readFileSync(filePath, 'utf-8').substring(0, 12000);
     }
     
-    if (ext === '.pdf' || ext === '.docx') {
+    if (ext === '.pdf'  || ext === '.docx') {
         // For hackathon: Read raw bytes and attempt UTF-8 text extraction
         // In production: use pdf-parse or mammoth npm packages
         try {

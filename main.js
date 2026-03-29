@@ -23,7 +23,7 @@ process.env.PORT = PORT; // Force child to use this port
 // 1. Dashboard Metrics
 ipcMain.handle('get-dashboard-metrics', async () => {
   return {
-    status: 'Active',
+    status:  'Active',
     score: 98,
     monitoredModels: 1402,
     activeAlerts: 3,
@@ -43,7 +43,7 @@ ipcMain.handle('get-governance-status', async () => {
     activePolicies: 12,
     pendingReviews: 4,
     recentUpdates: [
-      { name: 'SOC2 Type II Compliance Refresh', status: 'Completed', date: 'Today' },
+      { name: 'SOC2 Type II Compliance Refresh',  status: 'Completed', date: 'Today' },
       { name: 'Data Retention Policy V3', status: 'Pending Review', date: 'Yesterday' }
     ]
   };

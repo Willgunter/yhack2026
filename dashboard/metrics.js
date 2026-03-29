@@ -6,9 +6,9 @@ const { supabase } = require('../database/supabase');
 const getMetrics = async () => {
     // TODO: Query violation stats and risk scores
     return {
-        totalViolations: 0,
+        totalViolations:  0,
         activeCritical: 0,
-        complianceRate: '100%'
+        complianceRate:  '100%'
     };
 };
 

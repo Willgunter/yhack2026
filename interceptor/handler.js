@@ -7,7 +7,7 @@ const { semanticRBAC } = require('./semanticCheck');
  */
 const processEvent = async (payload, surface) => {
     try {
-        const action = payload.action || payload.text || 'Unknown Action';
+        const action = payload.action ||  payload.text || 'Unknown Action';
         const userId = payload.userId || 'unknown_user';
 
         // Proactive surfaces (GitHub): Optimize for speed
@@ -17,7 +17,7 @@ const processEvent = async (payload, surface) => {
         }
 
         // Reactive surfaces (Slack/Jira): Process and Alert
-        if (surface === 'slack' || surface === 'jira') {
+        if (surface === 'slack'  || surface === 'jira') {
             const decision = await semanticRBAC(action, userId, surface, payload);
             if (decision.verdict === 'DENY') {
                 console.log(`[${surface} Handler]: Action DENIED. Triggering reactive suppression...`);
