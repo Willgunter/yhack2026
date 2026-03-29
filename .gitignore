@@ -1,3 +1,4 @@
+
 # Dependency directories
 node_modules/
 desktop-agent/node_modules/
@@ -36,3 +37,5 @@ build/
 out/
 __pycache__/
 *.pyc
+node_modules/
+.next/
