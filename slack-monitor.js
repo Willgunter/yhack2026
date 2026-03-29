@@ -157,6 +157,21 @@ function startWorker(db) {
             updateResult.run(verdict, reasoning, regulation, rewrite, level, row.id);
             console.log(`[Worker] Result: ${verdict} | ${regulation}`);
 
+            // Write notification file so Electron renderer can update the dashboard
+            try {
+                const notifyDir = path.join(os.homedir(), '.praesidia', 'notifications');
+                if (!fs.existsSync(notifyDir)) fs.mkdirSync(notifyDir, { recursive: true });
+                const notifyFile = path.join(notifyDir, `${Date.now()}_${row.id}.json`);
+                fs.writeFileSync(notifyFile, JSON.stringify({
+                    text: (row.raw_text || '').substring(0, 100),
+                    channel: row.channel_id,
+                    timestamp: row.slack_ts,
+                    verdict, reasoning, regulation, rewrite,
+                    pii: JSON.parse(row.pii_findings || '[]'),
+                    level
+                }));
+            } catch (e) { /* non-critical */ }
+
             // Desktop notification for DENY/WARN
             if (verdict === 'DENY' || verdict === 'WARN') {
                 const title = verdict === 'DENY' ? 'VIOLATION DETECTED' : 'COMPLIANCE WARNING';

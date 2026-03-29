@@ -490,66 +490,34 @@ if (!gotTheLock) {
             slackMonitorInterval = true; // mark as running for status checks
             }
 
-            // Poll the queue DB for completed results (reads from slack-monitor.js output)
-            const Database = require('better-sqlite3');
-            const queueDbPath = getPraesidiaPath('slack_queue.db');
-            let lastNotifiedId = 0;
+            // Poll notification files written by slack-monitor.js (avoids SQLite ABI issues in Electron)
+            const notifyDir = getPraesidiaPath('notifications');
+            fs.mkdirSync(notifyDir, { recursive: true });
 
             setInterval(() => {
                 try {
-                    if (!fs.existsSync(queueDbPath)) return;
-                    const db = new Database(queueDbPath, { readonly: true });
-                    const rows = db.prepare(
-                        "SELECT * FROM message_queue WHERE status = 'done' AND id > ? AND notified = 0 ORDER BY id ASC"
-                    ).all(lastNotifiedId);
-                    db.close();
-
-                    if (rows.length > 0) {
-                        // Mark as notified (open writable connection briefly)
-                        const dbw = new Database(queueDbPath);
-                        const updateStmt = dbw.prepare("UPDATE message_queue SET notified = 1 WHERE id = ?");
-
-                        for (const row of rows) {
-                            lastNotifiedId = row.id;
+                    const files = fs.readdirSync(notifyDir).filter(f => f.endsWith('.json'));
+                    for (const file of files) {
+                        const filePath = path.join(notifyDir, file);
+                        try {
+                            const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                            fs.unlinkSync(filePath); // consume immediately
                             slackMsgCount++;
-                            updateStmt.run(row.id);
 
-                            console.log(`[Slack] Result: ${row.verdict} | ${row.regulation || 'no regulation'}`);
+                            console.log(`[Slack] Dashboard update: ${data.verdict} | ${data.regulation || ''}`);
 
-                            // Send to renderer
                             if (mainWindow && !mainWindow.isDestroyed()) {
-                                let pii = [];
-                                try { pii = JSON.parse(row.pii_findings || '[]'); } catch(e) {}
                                 mainWindow.webContents.send('slack-message-analyzed', {
-                                    text: (row.raw_text || '').substring(0, 100),
-                                    channel: row.channel_id,
-                                    timestamp: row.slack_ts,
-                                    verdict: row.verdict || 'UNKNOWN',
-                                    reasoning: row.reasoning || '',
-                                    regulation: row.regulation || '',
-                                    rewrite: row.suggested_rewrite || '',
-                                    pii: pii,
+                                    ...data,
                                     msgCount: slackMsgCount
                                 });
                             }
-
-                            // Desktop notification for DENY/WARN
-                            if (row.verdict === 'DENY' || row.verdict === 'WARN') {
-                                new Notification({
-                                    title: `Praesidia: ${row.verdict === 'DENY' ? 'Violation' : 'Warning'}`,
-                                    body: (row.regulation || 'Compliance issue flagged').substring(0, 150),
-                                    icon: path.join(__dirname, 'public', 'logo-256.png')
-                                }).show();
-                            }
-                        }
-                        dbw.close();
+                        } catch (e) { /* file may have been deleted or malformed */ }
                     }
-                } catch (e) {
-                    // DB might not exist yet or be locked, that's fine
-                }
+                } catch (e) { /* notifyDir not ready yet */ }
             }, 2000);
 
-            console.log('[Slack] Queue poller running every 2s');
+            console.log('[Slack] Notification file poller running every 2s');
         } else {
             console.log('[Slack] No token found, skipping auto-start');
         }
