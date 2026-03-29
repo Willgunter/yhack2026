@@ -8,7 +8,7 @@ const TAVUS_API_KEY = process.env.TAVUS_API_KEY;
 const roleMap = {
     'Intern': 'seeronsiva6@gmail.com',
     'Senior Developer': 'seerondev@gmail.com',
-    'Compliance Lead': 'seeronsubscriptions@gmail.com'
+    'Compliance Lead': 'seerondev@gmail.com'
 };
 
 /**
