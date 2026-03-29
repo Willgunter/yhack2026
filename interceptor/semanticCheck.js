@@ -5,7 +5,8 @@ const { orchestrateEscalation } = require('../escalation/hermes');
 const { insertViolation } = require('../database/supabase');
 require('dotenv').config();
 
-const DEEPSEEK_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions';
+const K2_ENDPOINT = process.env.K2_API_URL || 'https://api.k2think.ai/v1/chat/completions';
+const K2_MODEL = 'MBZUAI-IFM/K2-Think-v2';
 
 /**
  * Determine the next manager in the RBAC hierarchy for notification.
@@ -33,12 +34,23 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
         console.log(`🛡️ Intercepting [${surface}] Action from user ${userId}...`);
 
         // Step A (Identity): Fetch Auth0 Role
-        const roles = await getUserRoles(userId);
-        const primaryRole = roles[0] || 'Intern'; // Fallback to lowest privilege
-        const notifiedManager = getManagerForRole(primaryRole);
+        let primaryRole = 'Intern';
+        let notifiedManager = 'Compliance Manager';
+        try {
+            const roles = await getUserRoles(userId);
+            primaryRole = roles[0] || 'Intern';
+            notifiedManager = getManagerForRole(primaryRole);
+        } catch (e) {
+            console.warn('Auth0 role fetch failed, using default:', e.message);
+        }
 
         // Step B (Policy): Fetch GDPR/PIPEDA clause
-        const policyClause = await getRelevantPolicy(action, surface);
+        let policyClause = 'No specific policy loaded';
+        try {
+            policyClause = await getRelevantPolicy(action, surface);
+        } catch (e) {
+            console.warn('Policy fetch failed:', e.message);
+        }
 
         // Step C (DeepSeek R1 Reasoning): Call reasoning model
         const prompt = `User Role: ${primaryRole}
@@ -51,16 +63,19 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
         Provide a verdict: ALLOW, DENY, or WARN.
         Explain the reasoning for this verdict clearly.`;
 
-        const response = await axios.post(DEEPSEEK_ENDPOINT, {
-            model: "deepseek-reasoner",
-            messages: [{ role: "user", content: prompt }]
+        const response = await axios.post(K2_ENDPOINT, {
+            model: K2_MODEL,
+            messages: [{ role: "user", content: prompt }],
+            stream: false
         }, {
-            headers: { 'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}` }
+            headers: { 'Authorization': `Bearer ${process.env.K2_API_KEY}` },
+            timeout: 30000
         });
 
         // Capture Reasoning & Verdict
-        const thoughtProcess = response.data.choices[0].message.reasoning_content;
-        const verdictText = response.data.choices[0].message.content;
+        const rawContent = response.data.choices[0].message.content || '';
+        const thoughtProcess = rawContent;
+        const verdictText = rawContent;
         
         // Extract verdict word (ALLOW/DENY/WARN)
         const verdict = verdictText.match(/ALLOW|DENY|WARN/i)?.[0]?.toUpperCase() || 'WARN';
@@ -74,20 +89,23 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
         }
 
         // Step E (Logging): Save to Supabase
-        const violationData = {
-            user_id: userId,
-            surface: surface,
-            action_type: payload.type || 'unknown',
-            action_content: action,
-            verdict: verdict,
-            severity: verdict === 'DENY' ? 'HIGH' : 'LOW',
-            cited_policy: policyClause,
-            reasoning: verdictText,
-            thought_process: thoughtProcess,
-            escalation_sent: escalationSent
-        };
-
-        await insertViolation(violationData);
+        try {
+            const violationData = {
+                user_id: userId,
+                surface: surface,
+                action_type: payload.type || 'unknown',
+                action_content: action,
+                verdict: verdict,
+                severity: verdict === 'DENY' ? 'HIGH' : 'LOW',
+                cited_policy: policyClause,
+                reasoning: verdictText,
+                thought_process: thoughtProcess,
+                escalation_sent: escalationSent
+            };
+            await insertViolation(violationData);
+        } catch (e) {
+            console.warn('Supabase log failed:', e.message);
+        }
 
         return {
             verdict,

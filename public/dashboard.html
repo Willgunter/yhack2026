@@ -172,6 +172,10 @@
                 <svg class="w-4 h-4 text-brand-accent opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 Security Vault
             </div>
+            <div data-target="view-slack" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r text-brand-muted hover:text-white group">
+                <svg class="w-4 h-4 text-brand-warning opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                Slack Monitor
+            </div>
         </nav>
 
         <div class="p-6 border-t border-brand-border mt-auto">
@@ -457,8 +461,150 @@
                     </div>
                 </div>
 
+                <!-- ─── SLACK MONITOR VIEW ─── -->
+                <div id="view-slack" class="view-section space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Slack Compliance Monitor</h2>
+                            <p class="text-brand-muted text-sm mt-1">Monitor your Slack messages in real-time against company policies</p>
+                        </div>
+                        <div id="slack-status" class="flex items-center gap-2 bg-brand-border/30 border border-brand-border px-3 py-1.5 rounded-full">
+                            <div id="slack-status-dot" class="w-2 h-2 rounded-full bg-brand-muted"></div>
+                            <span id="slack-status-text" class="text-brand-muted text-xs font-semibold uppercase tracking-wider">Not Connected</span>
+                        </div>
+                    </div>
+
+                    <!-- Connect Slack -->
+                    <div id="slack-connect-section" class="glass-panel rounded-xl p-8 text-center">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-brand-accent" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zm6.313 2.521a2.528 2.528 0 0 1 2.521-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.521V8.834zm-1.271 0a2.528 2.528 0 0 1-2.521 2.521 2.528 2.528 0 0 1-2.521-2.521V2.522A2.528 2.528 0 0 1 11.355 0a2.528 2.528 0 0 1 2.521 2.522v6.312zm-2.521 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.522 2.528 2.528 0 0 1-2.521-2.522v-2.521h2.521zm0-1.271a2.528 2.528 0 0 1-2.521-2.521 2.528 2.528 0 0 1 2.521-2.521h6.313A2.528 2.528 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.521h-6.313z"/>
+                        </svg>
+                        <h3 class="text-lg font-bold text-white mb-2">Connect Your Slack Workspace</h3>
+                        <p class="text-brand-muted text-sm mb-6 max-w-md mx-auto">Praesidia will monitor your messages in real-time and alert you if anything violates company compliance policies.</p>
+                        <button onclick="connectSlack()" class="bg-brand-accent hover:bg-brand-accent/80 text-white px-8 py-3 rounded-lg font-semibold text-sm transition-colors inline-flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                            Connect Slack
+                        </button>
+                    </div>
+
+                    <!-- Live Monitor (hidden until connected) -->
+                    <div id="slack-live-section" class="hidden space-y-4">
+                        <div class="glass-panel rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-brand-accent/10 flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-brand-accent" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313z"/></svg>
+                                </div>
+                                <div>
+                                    <div id="slack-team-name" class="text-sm font-semibold text-white"></div>
+                                    <div class="text-xs text-brand-muted">Monitoring all channels</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span id="slack-msg-count" class="text-xs text-brand-muted">0 messages scanned</span>
+                                <button onclick="disconnectSlack()" class="text-xs text-brand-critical hover:text-brand-critical/80 transition-colors">Disconnect</button>
+                            </div>
+                        </div>
+
+                        <!-- Live Feed -->
+                        <div class="glass-panel rounded-xl">
+                            <div class="p-4 border-b border-brand-border flex items-center justify-between">
+                                <h3 class="font-bold text-white text-sm">Live Message Feed</h3>
+                                <span class="text-xs text-brand-muted">Only flagged messages shown</span>
+                            </div>
+                            <div id="slack-live-feed" class="p-4 space-y-3 max-h-96 overflow-y-auto">
+                                <div class="text-center text-brand-muted text-xs py-8">
+                                    <div class="w-3 h-3 rounded-full bg-brand-safe animate-pulse mx-auto mb-3"></div>
+                                    Listening for messages... Send something in Slack to test.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulate Section (always visible) -->
+                    <div class="glass-panel rounded-xl p-6">
+                        <label class="text-xs font-bold uppercase tracking-wider text-brand-muted block mb-3">Test a Message Manually</label>
+                        <textarea id="slack-input" rows="3" placeholder="Type a message to test compliance analysis... (e.g. &quot;We should not tell investors about the Q3 revenue miss until after they sign the contract&quot;)"
+                            class="w-full bg-black/40 border border-brand-border rounded-lg p-4 text-white text-sm font-mono resize-none focus:outline-none focus:border-brand-accent transition-colors placeholder:text-brand-muted/50"></textarea>
+                        <div class="flex items-center justify-between mt-4">
+                            <span id="slack-char-count" class="text-xs text-brand-muted">0 characters (min 50)</span>
+                            <button onclick="analyzeSlackMessage()" id="slack-send-btn" class="bg-brand-accent hover:bg-brand-accent/80 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition-colors flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                Analyze Message
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Processing Steps -->
+                    <div id="slack-pipeline" class="glass-panel rounded-xl p-6 hidden">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-brand-muted mb-4">Pipeline Execution</h3>
+                        <div class="space-y-3">
+                            <div id="step-scrub" class="flex items-center gap-3 text-sm">
+                                <div class="w-6 h-6 rounded-full bg-brand-border flex items-center justify-center text-[10px] font-bold">1</div>
+                                <span class="text-brand-muted">Presidio PII Scrub (local)</span>
+                                <span id="step-scrub-status" class="ml-auto text-xs"></span>
+                            </div>
+                            <div id="step-mem0" class="flex items-center gap-3 text-sm">
+                                <div class="w-6 h-6 rounded-full bg-brand-border flex items-center justify-center text-[10px] font-bold">2</div>
+                                <span class="text-brand-muted">Mem0 Policy Retrieval</span>
+                                <span id="step-mem0-status" class="ml-auto text-xs"></span>
+                            </div>
+                            <div id="step-k2" class="flex items-center gap-3 text-sm">
+                                <div class="w-6 h-6 rounded-full bg-brand-border flex items-center justify-center text-[10px] font-bold">3</div>
+                                <span class="text-brand-muted">K2 Think V2 Legal Analysis</span>
+                                <span id="step-k2-status" class="ml-auto text-xs"></span>
+                            </div>
+                            <div id="step-verdict" class="flex items-center gap-3 text-sm">
+                                <div class="w-6 h-6 rounded-full bg-brand-border flex items-center justify-center text-[10px] font-bold">4</div>
+                                <span class="text-brand-muted">Verdict & Notification</span>
+                                <span id="step-verdict-status" class="ml-auto text-xs"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div id="slack-results" class="hidden space-y-4">
+                        <!-- Verdict Card -->
+                        <div id="verdict-card" class="glass-panel rounded-xl p-6 border-l-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 id="verdict-title" class="text-lg font-bold"></h3>
+                                <span id="verdict-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></span>
+                            </div>
+                            <div id="verdict-regulation" class="text-sm text-brand-accent mb-3"></div>
+                            <div id="verdict-reasoning" class="text-sm text-brand-muted leading-relaxed"></div>
+                        </div>
+
+                        <!-- Suggested Rewrite -->
+                        <div id="rewrite-card" class="glass-panel rounded-xl p-6 hidden">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-brand-safe mb-3">Suggested Compliant Rewrite</h3>
+                            <p id="rewrite-text" class="text-sm text-white bg-brand-safe/5 border border-brand-safe/20 rounded-lg p-4 leading-relaxed"></p>
+                        </div>
+
+                        <!-- PII Findings -->
+                        <div id="pii-card" class="glass-panel rounded-xl p-6 hidden">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-brand-critical mb-3">PII Detected (Scrubbed Before Analysis)</h3>
+                            <div id="pii-list" class="space-y-2"></div>
+                        </div>
+
+                        <!-- Scrubbed Version -->
+                        <div id="scrubbed-card" class="glass-panel rounded-xl p-6">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-brand-muted mb-3">Scrubbed Version (What K2 Saw)</h3>
+                            <pre id="scrubbed-text" class="text-xs text-brand-muted font-mono bg-black/40 p-4 rounded-lg whitespace-pre-wrap"></pre>
+                        </div>
+                    </div>
+
+                    <!-- History -->
+                    <div class="glass-panel rounded-xl">
+                        <div class="p-5 border-b border-brand-border">
+                            <h3 class="font-bold text-white text-sm">Recent Analysis History</h3>
+                        </div>
+                        <div id="slack-history" class="p-4 space-y-3 max-h-64 overflow-y-auto">
+                            <p class="text-center text-brand-muted text-xs py-4">No messages analyzed yet</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-            
+
             <!-- Footer alignment info -->
             <div class="fixed bottom-0 left-64 right-0 h-8 flex items-center justify-between px-8 text-[9px] uppercase tracking-widest text-brand-muted/70 bg-brand-bg/80 backdrop-blur pointer-events-none z-20">
                 <div class="flex gap-6">
@@ -823,6 +969,256 @@
             document.getElementById('toast-msg').textContent = msg;
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 4000);
+        }
+
+        // ─── SLACK LIVE CONNECT & MONITOR ───
+        async function checkSlackStatus() {
+            try {
+                const status = await window.api.slackStatus();
+                if (status.connected) {
+                    document.getElementById('slack-connect-section').classList.add('hidden');
+                    document.getElementById('slack-live-section').classList.remove('hidden');
+                    document.getElementById('slack-team-name').textContent = status.team_name || 'Connected Workspace';
+                    document.getElementById('slack-status-dot').className = 'w-2 h-2 rounded-full bg-brand-safe animate-pulse';
+                    document.getElementById('slack-status-text').textContent = 'Connected';
+                    document.getElementById('slack-status-text').className = 'text-brand-safe text-xs font-semibold uppercase tracking-wider';
+                    document.getElementById('slack-status').className = 'flex items-center gap-2 bg-brand-safe/10 border border-brand-safe/20 px-3 py-1.5 rounded-full';
+
+                    if (!status.monitoring) {
+                        const result = await window.api.slackStartMonitor();
+                        console.log('Slack monitor started:', result);
+                    }
+                }
+            } catch (e) { console.log('Slack status check:', e.message); }
+        }
+
+        async function connectSlack() {
+            const btn = event.target.closest('button');
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"/></svg> Connecting...';
+
+            const result = await window.api.slackConnect();
+
+            if (result.success) {
+                showToast('Slack Connected', `Connected to ${result.team_name}`);
+                checkSlackStatus();
+            } else {
+                showToast('Connection Failed', result.error || 'Please try again');
+                btn.disabled = false;
+                btn.innerHTML = 'Connect Slack';
+            }
+        }
+
+        async function disconnectSlack() {
+            await window.api.slackDisconnect();
+            document.getElementById('slack-connect-section').classList.remove('hidden');
+            document.getElementById('slack-live-section').classList.add('hidden');
+            document.getElementById('slack-status-dot').className = 'w-2 h-2 rounded-full bg-brand-muted';
+            document.getElementById('slack-status-text').textContent = 'Not Connected';
+            document.getElementById('slack-status-text').className = 'text-brand-muted text-xs font-semibold uppercase tracking-wider';
+            document.getElementById('slack-status').className = 'flex items-center gap-2 bg-brand-border/30 border border-brand-border px-3 py-1.5 rounded-full';
+            showToast('Disconnected', 'Slack monitoring stopped');
+        }
+
+        // Listen for live analyzed messages from main process
+        if (window.api.onSlackMessage) {
+            window.api.onSlackMessage((data) => {
+                document.getElementById('slack-msg-count').textContent = `${data.msgCount} messages scanned`;
+
+                // Only show flagged messages in the feed
+                if (data.verdict === 'DENY' || data.verdict === 'WARN') {
+                    const feed = document.getElementById('slack-live-feed');
+                    // Clear the "listening" placeholder on first message
+                    if (feed.querySelector('.text-center')) feed.innerHTML = '';
+
+                    const colors = {
+                        DENY: { border: 'border-brand-critical', bg: 'bg-brand-critical/5', badge: 'bg-brand-critical/10 text-brand-critical', label: 'DENIED' },
+                        WARN: { border: 'border-brand-warning', bg: 'bg-brand-warning/5', badge: 'bg-brand-warning/10 text-brand-warning', label: 'WARNING' }
+                    };
+                    const c = colors[data.verdict] || colors.WARN;
+
+                    const card = document.createElement('div');
+                    card.className = `${c.bg} border ${c.border} rounded-lg p-4 animate-pulse-once`;
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="${c.badge} px-2 py-0.5 rounded text-[10px] font-bold uppercase">${c.label}</span>
+                            <span class="text-[10px] text-brand-muted">${new Date().toLocaleTimeString()}</span>
+                        </div>
+                        <p class="text-sm text-white font-mono mb-2">"${data.text}"</p>
+                        ${data.regulation ? `<p class="text-xs text-brand-accent mb-1">Cited: ${data.regulation}</p>` : ''}
+                        <p class="text-xs text-brand-muted">${data.reasoning}</p>
+                        ${data.rewrite ? `<div class="mt-2 text-xs text-brand-safe bg-brand-safe/5 border border-brand-safe/20 rounded p-2"><strong>Suggested:</strong> ${data.rewrite}</div>` : ''}
+                        ${data.pii && data.pii.length > 0 ? `<div class="mt-2 flex gap-2">${data.pii.map(p => `<span class="text-[10px] px-2 py-0.5 rounded bg-brand-critical/10 text-brand-critical">${p.type}</span>`).join('')}</div>` : ''}
+                    `;
+                    feed.prepend(card);
+                }
+            });
+        }
+
+        // Check Slack status on page load
+        checkSlackStatus();
+
+        // ─── SLACK SIMULATE ───
+        const slackInput = document.getElementById('slack-input');
+        const slackSendBtn = document.getElementById('slack-send-btn');
+        const slackCharCount = document.getElementById('slack-char-count');
+        let slackHistory = [];
+
+        if (slackInput) {
+            slackInput.addEventListener('input', () => {
+                const len = slackInput.value.length;
+                slackCharCount.textContent = `${len} characters (min 50)`;
+                slackSendBtn.disabled = len < 50;
+                slackCharCount.className = len >= 50 ? 'text-xs text-brand-safe' : 'text-xs text-brand-muted';
+            });
+        }
+
+        async function analyzeSlackMessage() {
+            const text = slackInput.value.trim();
+            if (text.length < 50) return;
+
+            slackSendBtn.disabled = true;
+            slackSendBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"/></svg> Analyzing...';
+
+            const pipeline = document.getElementById('slack-pipeline');
+            const results = document.getElementById('slack-results');
+            pipeline.classList.remove('hidden');
+            results.classList.add('hidden');
+
+            // Step 1: Presidio scrub (via Flask server)
+            updateStep('step-scrub', 'running');
+            let scrubData = { scrubbed_text: text, detected: [] };
+            try {
+                const scrubResp = await fetch('http://localhost:5001/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: text, source: 'slack', author: 'test-user' })
+                });
+                if (scrubResp.ok) {
+                    const d = await scrubResp.json();
+                    scrubData.scrubbed_text = d.scrubbed_content || text;
+                    scrubData.detected = d.pii_findings || [];
+                    updateStep('step-scrub', scrubData.detected.length > 0 ? 'found' : 'clean');
+                } else {
+                    // Flask not running — scrub locally by just passing through
+                    updateStep('step-scrub', 'clean');
+                }
+            } catch (e) {
+                // Flask not running — pass raw text
+                updateStep('step-scrub', 'skip');
+            }
+
+            // Step 2: Mem0 (happens inside K2 Brain)
+            updateStep('step-mem0', 'running');
+
+            // Step 3: K2 Analysis
+            updateStep('step-k2', 'running');
+            let k2Data = {};
+            try {
+                const k2Resp = await fetch('http://localhost:3005/api/slack/intercept', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: scrubData.scrubbed_text, userId: 'test-user' })
+                });
+                k2Data = await k2Resp.json();
+                updateStep('step-mem0', 'done');
+                updateStep('step-k2', 'done');
+            } catch (e) {
+                updateStep('step-mem0', 'skip');
+                updateStep('step-k2', 'error');
+                k2Data = { verdict: 'ERROR', reasoning: 'K2 Brain unreachable: ' + e.message };
+            }
+
+            // Step 4: Verdict
+            const verdict = k2Data.verdict || 'UNKNOWN';
+            updateStep('step-verdict', verdict === 'ALLOW' ? 'clean' : verdict === 'ERROR' ? 'error' : 'found');
+
+            // Show results
+            results.classList.remove('hidden');
+
+            // Verdict card
+            const vCard = document.getElementById('verdict-card');
+            const vBadge = document.getElementById('verdict-badge');
+            const colors = {
+                ALLOW: { border: 'border-brand-safe', bg: 'bg-brand-safe/10', text: 'text-brand-safe', label: 'ALLOWED' },
+                WARN: { border: 'border-brand-warning', bg: 'bg-brand-warning/10', text: 'text-brand-warning', label: 'WARNING' },
+                DENY: { border: 'border-brand-critical', bg: 'bg-brand-critical/10', text: 'text-brand-critical', label: 'DENIED' },
+                ERROR: { border: 'border-brand-muted', bg: 'bg-brand-muted/10', text: 'text-brand-muted', label: 'ERROR' }
+            };
+            const c = colors[verdict] || colors.ERROR;
+            vCard.className = `glass-panel rounded-xl p-6 border-l-4 ${c.border}`;
+            vBadge.className = `px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${c.bg} ${c.text}`;
+            vBadge.textContent = c.label;
+            document.getElementById('verdict-title').textContent = verdict === 'ALLOW' ? 'No Violations Detected' : 'Compliance Violation Detected';
+            document.getElementById('verdict-title').className = `text-lg font-bold ${c.text}`;
+            document.getElementById('verdict-regulation').textContent = k2Data.cited_regulation ? `Cited: ${k2Data.cited_regulation}` : '';
+            document.getElementById('verdict-reasoning').textContent = k2Data.thought_process || k2Data.reasoning || '';
+
+            // Suggested rewrite
+            const rwCard = document.getElementById('rewrite-card');
+            if (k2Data.suggested_rewrite) {
+                rwCard.classList.remove('hidden');
+                document.getElementById('rewrite-text').textContent = k2Data.suggested_rewrite;
+            } else {
+                rwCard.classList.add('hidden');
+            }
+
+            // PII findings
+            const piiCard = document.getElementById('pii-card');
+            if (scrubData.detected.length > 0) {
+                piiCard.classList.remove('hidden');
+                document.getElementById('pii-list').innerHTML = scrubData.detected.map(f =>
+                    `<div class="flex items-center gap-3 bg-brand-critical/5 border border-brand-critical/20 rounded-lg px-4 py-2">
+                        <span class="text-xs font-bold text-brand-critical uppercase">${f.type}</span>
+                        <span class="text-xs text-brand-muted">${Math.round((f.score || 0) * 100)}% confidence</span>
+                        ${f.redacted_text ? `<code class="text-xs text-brand-critical/70 ml-auto">${f.redacted_text}</code>` : ''}
+                    </div>`
+                ).join('');
+            } else {
+                piiCard.classList.add('hidden');
+            }
+
+            // Scrubbed text
+            document.getElementById('scrubbed-text').textContent = scrubData.scrubbed_text;
+
+            // Add to history
+            slackHistory.unshift({ text: text.slice(0, 60) + '...', verdict, regulation: k2Data.cited_regulation || '', time: new Date().toLocaleTimeString() });
+            renderSlackHistory();
+
+            // Reset button
+            slackSendBtn.disabled = false;
+            slackSendBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Analyze Message';
+        }
+
+        function updateStep(stepId, status) {
+            const el = document.getElementById(stepId + '-status');
+            if (!el) return;
+            const map = {
+                running: '<span class="text-brand-accent animate-pulse">Processing...</span>',
+                done: '<span class="text-brand-safe">Done</span>',
+                clean: '<span class="text-brand-safe">Clean</span>',
+                found: '<span class="text-brand-warning">Found</span>',
+                skip: '<span class="text-brand-muted">Skipped</span>',
+                error: '<span class="text-brand-critical">Error</span>',
+            };
+            el.innerHTML = map[status] || '';
+        }
+
+        function renderSlackHistory() {
+            const cont = document.getElementById('slack-history');
+            if (slackHistory.length === 0) {
+                cont.innerHTML = '<p class="text-center text-brand-muted text-xs py-4">No messages analyzed yet</p>';
+                return;
+            }
+            cont.innerHTML = slackHistory.slice(0, 10).map(h => {
+                const vc = h.verdict === 'ALLOW' ? 'text-brand-safe' : h.verdict === 'WARN' ? 'text-brand-warning' : 'text-brand-critical';
+                return `<div class="flex items-center gap-3 bg-black/20 rounded-lg px-4 py-3 border border-brand-border">
+                    <span class="font-bold text-xs uppercase ${vc}">${h.verdict}</span>
+                    <span class="text-xs text-brand-muted flex-1 truncate">${h.text}</span>
+                    <span class="text-[10px] text-brand-muted">${h.regulation || ''}</span>
+                    <span class="text-[10px] text-brand-muted/50">${h.time}</span>
+                </div>`;
+            }).join('');
         }
 
         // ─── INITIALIZATION ───

@@ -108,7 +108,7 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
         Provide your response exactly in this JSON format strictly:
         {
           "reasoningTrace": "Step by step reasoning citing specific policies and regulations...",
-          "level": [Number 3, 4, or 5 based on charter violation. 0 if no violation],
+          "level": 0,
           "verdict": "ALLOW" | "DENY" | "WARN",
           "psiScript": "Intern, a breach... [cite the specific company policy or regulation violated]",
           "cited_regulation": "e.g. SEC Regulation FD / HIPAA §164.502 / Company Policy: Data Handling v2.1",
@@ -129,14 +129,46 @@ async function semanticRBAC(action, userId, surface, payload = {}) {
         const content = response.data.choices[0].message.content;
         console.log("📥 K2 Response received. Parsing...");
 
-        // Capture Reasoning & Verdict
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {
-            verdict: 'WARN',
-            level: 3,
-            reasoningTrace: "Fallback reasoning. Unrecognized structure.",
-            psiScript: "Intern, an ambiguous violation occurred."
+        // Capture Reasoning & Verdict — K2 often wraps JSON in prose,
+        // so we try multiple extraction strategies
+        let parsed;
+        const fallbackFromText = (text) => {
+            const verdictMatch = text.match(/\b(DENY|WARN|ALLOW)\b/i);
+            const regMatch = text.match(/(?:SEC|HIPAA|GDPR|SOX|FMLA|Regulation\s+\w+)[^.;]*/i);
+            return {
+                verdict: verdictMatch ? verdictMatch[1].toUpperCase() : 'WARN',
+                level: text.match(/DENY/i) ? 4 : 3,
+                reasoningTrace: text.substring(0, 500),
+                psiScript: "Intern, a potential compliance issue was detected.",
+                cited_regulation: regMatch ? regMatch[0].trim() : '',
+                suggested_rewrite: ''
+            };
         };
+
+        try {
+            // Find ALL JSON-like blocks and try each one (last is usually the answer)
+            const allMatches = content.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g) || [];
+            let found = false;
+            for (let i = allMatches.length - 1; i >= 0; i--) {
+                try {
+                    let cleaned = allMatches[i]
+                        .replace(/\[Number.*?\]/g, '0')
+                        .replace(/\"ALLOW\"\s*\|\s*\"DENY\"\s*\|\s*\"WARN\"/g, '"WARN"');
+                    const candidate = JSON.parse(cleaned);
+                    if (candidate.verdict) {
+                        parsed = candidate;
+                        found = true;
+                        break;
+                    }
+                } catch (e) { /* try next match */ }
+            }
+            if (!found) {
+                parsed = fallbackFromText(content);
+            }
+        } catch (parseErr) {
+            console.warn('JSON parse failed, extracting from text:', parseErr.message);
+            parsed = fallbackFromText(content);
+        }
 
         const verdict = parsed.verdict;
         const level = parsed.level;

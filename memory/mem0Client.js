@@ -1,7 +1,15 @@
-const { Memory } = require('mem0ai/oss'); // Adjusting import based on official SDK
+const axios = require('axios');
 require('dotenv').config();
 
-const memory = new Memory();
+const MEM0_API_KEY = process.env.MEM0_API_KEY;
+const MEM0_ORG_ID = process.env.MEM0_ORG_ID || '';
+const MEM0_PROJECT_ID = process.env.MEM0_PROJECT_ID || '';
+const MEM0_BASE_URL = 'https://api.mem0.ai/v1';
+
+const headers = {
+  'Authorization': `Token ${MEM0_API_KEY}`,
+  'Content-Type': 'application/json',
+};
 
 /**
  * Add an event to a user's persistent memory.
@@ -9,9 +17,18 @@ const memory = new Memory();
  * @param {string} content - event details
  */
 const addToMemory = async (userId, content) => {
-  // TODO: Implement Mem0 persistent memory update
-  await memory.add(content, { user_id: userId });
-  return { status: 'recorded' };
+  try {
+    const resp = await axios.post(`${MEM0_BASE_URL}/memories/`, {
+      messages: [{ role: 'user', content }],
+      user_id: userId,
+      org_id: MEM0_ORG_ID,
+      project_id: MEM0_PROJECT_ID,
+    }, { headers, timeout: 10000 });
+    return { status: 'recorded', data: resp.data };
+  } catch (err) {
+    console.warn('[Mem0] addToMemory failed:', err.message);
+    return { status: 'error', error: err.message };
+  }
 };
 
 /**
@@ -20,9 +37,20 @@ const addToMemory = async (userId, content) => {
  * @param {string} query - query for context
  */
 const recallUserContext = async (userId, query) => {
-  // TODO: Contextual retrieval from Mem0
-  const facts = await memory.search(query, { user_id: userId });
-  return facts;
+  try {
+    const resp = await axios.post(`${MEM0_BASE_URL}/memories/search/`, {
+      query,
+      user_id: userId,
+      org_id: MEM0_ORG_ID,
+      project_id: MEM0_PROJECT_ID,
+    }, { headers, timeout: 10000 });
+    // Return array of memory strings
+    const results = resp.data.results || resp.data || [];
+    return results.map(r => r.memory || r.text || r.content || JSON.stringify(r));
+  } catch (err) {
+    console.warn('[Mem0] recallUserContext failed:', err.message);
+    return [];
+  }
 };
 
 module.exports = {

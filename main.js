@@ -1,9 +1,13 @@
-const { app, BrowserWindow, Menu, ipcMain, Tray, Notification, screen, utilityProcess } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, Tray, Notification, screen, utilityProcess, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const axios = require('axios');
 const { dialog } = require('electron');
+
+// Force Windows to show our icon instead of the Electron default
+app.setAppUserModelId('com.praesidia.engine');
+const APP_ICO = path.join(__dirname, 'public', 'praesidia.ico');
 
 // Native Service Imports
 const { listPolicies } = require('./database/supabase');
@@ -118,6 +122,177 @@ ipcMain.handle('auth-login', async (event, { username, password }) => {
 });
 
 
+// ─── SLACK OAUTH & LIVE MONITORING ───
+const SLACK_OAUTH_BASE = 'https://praesidia.dev/api/slack';
+let slackMonitorInterval = null;
+let slackLastTs = null;
+let slackMsgCount = 0;
+
+// 9. Slack Connect - opens browser for OAuth
+ipcMain.handle('slack-connect', async () => {
+    const sessionId = require('crypto').randomUUID();
+    const url = `${SLACK_OAUTH_BASE}/install?session=${sessionId}`;
+    require('electron').shell.openExternal(url);
+
+    // Poll for token completion
+    let attempts = 0;
+    const maxAttempts = 120; // 2 minutes
+
+    return new Promise((resolve) => {
+        const poll = setInterval(async () => {
+            attempts++;
+            try {
+                const resp = await axios.get(`${SLACK_OAUTH_BASE}/status?session=${sessionId}`);
+                if (resp.data.status === 'connected') {
+                    clearInterval(poll);
+                    // Save tokens locally
+                    const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+                    fs.mkdirSync(path.dirname(tokenPath), { recursive: true });
+                    fs.writeFileSync(tokenPath, JSON.stringify(resp.data, null, 2));
+                    resolve({ success: true, team_name: resp.data.team_name, team_id: resp.data.team_id });
+                }
+            } catch (e) { /* still waiting */ }
+
+            if (attempts >= maxAttempts) {
+                clearInterval(poll);
+                resolve({ error: 'OAuth timed out' });
+            }
+        }, 1000);
+    });
+});
+
+// 10. Slack Status - check if connected
+ipcMain.handle('slack-status', async () => {
+    const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+    if (fs.existsSync(tokenPath)) {
+        const data = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        return { connected: true, team_name: data.team_name, team_id: data.team_id, monitoring: !!slackMonitorInterval };
+    }
+    return { connected: false };
+});
+
+// 11. Slack Start Monitor - poll for new messages and run pipeline
+ipcMain.handle('slack-start-monitor', async () => {
+    const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+    if (!fs.existsSync(tokenPath)) return { error: 'Not connected' };
+
+    const tokens = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+    const userToken = tokens.bot_token; // This is actually a user token (xoxp-)
+    const userId = tokens.authed_user_id;
+
+    if (slackMonitorInterval) return { status: 'already_running' };
+
+    slackLastTs = String((Date.now() - 5 * 60 * 1000) / 1000); // Look back 5 minutes
+    slackMsgCount = 0;
+
+    // Get list of channels the user is in
+    let channels = [];
+    try {
+        const resp = await axios.get('https://slack.com/api/conversations.list', {
+            headers: { Authorization: `Bearer ${userToken}` },
+            params: { types: 'public_channel', limit: 100 }
+        });
+        if (!resp.data.ok) {
+            console.error('[Slack Monitor] Channel list error:', resp.data.error);
+            return { error: 'Slack API error: ' + resp.data.error };
+        }
+        channels = (resp.data.channels || []).filter(c => c.is_member).map(c => c.id);
+        console.log(`[Slack Monitor] Watching ${channels.length} channels:`, channels);
+    } catch (e) {
+        console.error('[Slack Monitor] Failed to list channels:', e.message);
+        return { error: 'Failed to list channels: ' + e.message };
+    }
+
+    // Poll every 3 seconds for new messages across channels
+    slackMonitorInterval = setInterval(async () => {
+        for (const channelId of channels) {
+            try {
+                const resp = await axios.get('https://slack.com/api/conversations.history', {
+                    headers: { Authorization: `Bearer ${userToken}` },
+                    params: { channel: channelId, oldest: slackLastTs, limit: 10 }
+                });
+
+                const messages = (resp.data.messages || []).filter(m =>
+                    m.user === userId && !m.subtype && (m.text || '').length >= 50
+                );
+
+                for (const msg of messages) {
+                    slackMsgCount++;
+                    slackLastTs = msg.ts;
+
+                    // Run through pipeline: Presidio → K2
+                    let scrubResult = { scrubbed_text: msg.text, pii_findings: [] };
+                    try {
+                        const scrubResp = await axios.post('http://localhost:5001/scan', {
+                            content: msg.text, source: 'slack', author: userId
+                        });
+                        scrubResult.scrubbed_text = scrubResp.data.scrubbed_content || msg.text;
+                        scrubResult.pii_findings = scrubResp.data.pii_findings || [];
+                    } catch (e) { /* Presidio not running, use raw */ }
+
+                    // K2 analysis
+                    let k2Result = {};
+                    try {
+                        const k2Resp = await axios.post(`http://127.0.0.1:${PORT}/api/slack/intercept`, {
+                            action: scrubResult.scrubbed_text, userId: userId
+                        }, { timeout: 45000 });
+                        k2Result = k2Resp.data;
+                        console.log(`[Slack Monitor] K2 verdict: ${k2Result.verdict}`)
+                    } catch (e) {
+                        k2Result = { verdict: 'ERROR', reasoning: 'K2 unreachable' };
+                    }
+
+                    // Send to renderer
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('slack-message-analyzed', {
+                            text: msg.text.substring(0, 100) + (msg.text.length > 100 ? '...' : ''),
+                            channel: channelId,
+                            timestamp: msg.ts,
+                            verdict: k2Result.verdict || 'UNKNOWN',
+                            reasoning: k2Result.thought_process || k2Result.reasoning || '',
+                            regulation: k2Result.cited_regulation || '',
+                            rewrite: k2Result.suggested_rewrite || '',
+                            pii: scrubResult.pii_findings,
+                            msgCount: slackMsgCount
+                        });
+                    }
+
+                    // Desktop notification for DENY/WARN
+                    if (k2Result.verdict === 'DENY' || k2Result.verdict === 'WARN') {
+                        new Notification({
+                            title: `Praesidia: ${k2Result.verdict === 'DENY' ? 'Violation' : 'Warning'} Detected`,
+                            body: k2Result.thought_process || k2Result.reasoning || 'Your Slack message was flagged.',
+                            icon: path.join(__dirname, 'public', 'logo-256.png')
+                        }).show();
+                    }
+                }
+            } catch (e) { console.error(`[Slack Monitor] Channel ${channelId} error:`, e.message); }
+        }
+    }, 3000);
+
+    return { status: 'started', channels: channels.length };
+});
+
+// 12. Slack Stop Monitor
+ipcMain.handle('slack-stop-monitor', async () => {
+    if (slackMonitorInterval) {
+        clearInterval(slackMonitorInterval);
+        slackMonitorInterval = null;
+    }
+    return { status: 'stopped' };
+});
+
+// 13. Slack Disconnect
+ipcMain.handle('slack-disconnect', async () => {
+    if (slackMonitorInterval) {
+        clearInterval(slackMonitorInterval);
+        slackMonitorInterval = null;
+    }
+    const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+    if (fs.existsSync(tokenPath)) fs.unlinkSync(tokenPath);
+    return { status: 'disconnected' };
+});
+
 // Legacy proxy handler (to be phased out, but kept for non-migrated routes)
 ipcMain.handle('fetch-data', async (event, endpoint, options = {}) => {
   try {
@@ -181,7 +356,7 @@ function createWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 768,
-    icon: path.join(__dirname, 'public', 'logo.png'), // Praesidia Spartan logo
+    icon: APP_ICO,
     backgroundColor: '#14151B',
     title: 'Praesidia Dashboard',
     webPreferences: {
@@ -310,7 +485,7 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     // 1. Initialize Tray
-    tray = new Tray(path.join(__dirname, 'public', 'logo.png'));
+    tray = new Tray(path.join(__dirname, 'public', 'tray-icon.png'));
     const contextMenu = Menu.buildFromTemplate([
         { label: 'Praesidia Engine Running', enabled: false },
         { type: 'separator' },
@@ -321,6 +496,7 @@ if (!gotTheLock) {
     ]);
     tray.setToolTip('Praesidia Sovereign Engine');
     tray.setContextMenu(contextMenu);
+    tray.on('click', () => { if (!mainWindow) createWindow(); else mainWindow.focus(); });
 
     // 2. Initialize Background Guards
     if (injectGitHooksGlobally) injectGitHooksGlobally();
@@ -348,6 +524,88 @@ if (!gotTheLock) {
     backendProcess.stderr.on('data', (data) => console.error(`[Backend-STDERR]: ${data}`));
 
     setTimeout(createWindow, 2000);
+
+    // Auto-start Slack monitor as a child process + poll queue DB for results
+    setTimeout(() => {
+        const tokenPath = path.join(require('os').homedir(), '.praesidia', 'slack_tokens.json');
+        if (fs.existsSync(tokenPath)) {
+            console.log('[Slack] Token found, launching monitor process...');
+
+            // Launch slack-monitor.js as a child process
+            const { spawn } = require('child_process');
+            const monitorProcess = spawn('node', [path.join(__dirname, 'slack-monitor.js')], {
+                cwd: __dirname, env: process.env, stdio: ['ignore', 'pipe', 'pipe']
+            });
+            monitorProcess.stdout.on('data', (d) => console.log(`[SlackMon] ${d.toString().trim()}`));
+            monitorProcess.stderr.on('data', (d) => console.error(`[SlackMon-ERR] ${d.toString().trim()}`));
+            monitorProcess.on('error', (e) => console.error('[Slack] Monitor spawn error:', e.message));
+            monitorProcess.on('exit', (code) => console.log('[Slack] Monitor exited:', code));
+
+            // Poll the queue DB for completed results
+            const Database = require('better-sqlite3');
+            const queueDbPath = path.join(require('os').homedir(), '.praesidia', 'slack_queue.db');
+            let lastNotifiedId = 0;
+
+            setInterval(() => {
+                try {
+                    if (!fs.existsSync(queueDbPath)) return;
+                    const db = new Database(queueDbPath, { readonly: true });
+                    const rows = db.prepare(
+                        "SELECT * FROM message_queue WHERE status = 'done' AND id > ? AND notified = 0 ORDER BY id ASC"
+                    ).all(lastNotifiedId);
+                    db.close();
+
+                    if (rows.length > 0) {
+                        // Mark as notified (open writable connection briefly)
+                        const dbw = new Database(queueDbPath);
+                        const updateStmt = dbw.prepare("UPDATE message_queue SET notified = 1 WHERE id = ?");
+
+                        for (const row of rows) {
+                            lastNotifiedId = row.id;
+                            slackMsgCount++;
+                            updateStmt.run(row.id);
+
+                            console.log(`[Slack] Result: ${row.verdict} | ${row.regulation || 'no regulation'}`);
+
+                            // Send to renderer
+                            if (mainWindow && !mainWindow.isDestroyed()) {
+                                let pii = [];
+                                try { pii = JSON.parse(row.pii_findings || '[]'); } catch(e) {}
+                                mainWindow.webContents.send('slack-message-analyzed', {
+                                    text: (row.raw_text || '').substring(0, 100),
+                                    channel: row.channel_id,
+                                    timestamp: row.slack_ts,
+                                    verdict: row.verdict || 'UNKNOWN',
+                                    reasoning: row.reasoning || '',
+                                    regulation: row.regulation || '',
+                                    rewrite: row.suggested_rewrite || '',
+                                    pii: pii,
+                                    msgCount: slackMsgCount
+                                });
+                            }
+
+                            // Desktop notification for DENY/WARN
+                            if (row.verdict === 'DENY' || row.verdict === 'WARN') {
+                                new Notification({
+                                    title: `Praesidia: ${row.verdict === 'DENY' ? 'Violation' : 'Warning'}`,
+                                    body: (row.regulation || 'Compliance issue flagged').substring(0, 150),
+                                    icon: path.join(__dirname, 'public', 'logo-256.png')
+                                }).show();
+                            }
+                        }
+                        dbw.close();
+                    }
+                } catch (e) {
+                    // DB might not exist yet or be locked, that's fine
+                }
+            }, 2000);
+
+            console.log('[Slack] Queue poller running every 2s');
+        } else {
+            console.log('[Slack] No token found, skipping auto-start');
+        }
+    }, 5000);
+
     backendProcess.on('message', (msg) => {
         if (!msg || !msg.type) return;
         
@@ -359,7 +617,7 @@ if (!gotTheLock) {
             new Notification({
                 title: `Praesidia [${verdict}]: Level ${level || 5} Breach on ${(surface||'System').toUpperCase()}`,
                 body: reasoning || 'Unknown breach detected',
-                icon: path.join(__dirname, 'public', 'logo.png')
+                icon: path.join(__dirname, 'public', 'logo-256.png')
             }).show();
 
             if (verdict === 'DENY' || (level && level >= 4)) {

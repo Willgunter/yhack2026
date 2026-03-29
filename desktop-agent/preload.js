@@ -13,5 +13,13 @@ contextBridge.exposeInMainWorld('api', {
     listPolicies: () => ipcRenderer.invoke('get-policies-list'),
     selectAndUploadPolicy: () => ipcRenderer.invoke('select-and-ingest-policy'),
     ingestPolicyUrl: (url) => ipcRenderer.invoke('ingest-policy-url', url),
-    login: (username, password) => ipcRenderer.invoke('auth-login', { username, password })
+    login: (username, password) => ipcRenderer.invoke('auth-login', { username, password }),
+
+    // Slack Monitor
+    slackConnect: () => ipcRenderer.invoke('slack-connect'),
+    slackStatus: () => ipcRenderer.invoke('slack-status'),
+    slackStartMonitor: () => ipcRenderer.invoke('slack-start-monitor'),
+    slackStopMonitor: () => ipcRenderer.invoke('slack-stop-monitor'),
+    slackDisconnect: () => ipcRenderer.invoke('slack-disconnect'),
+    onSlackMessage: (callback) => ipcRenderer.on('slack-message-analyzed', (event, data) => callback(data))
 });

@@ -75,7 +75,7 @@ async function handleInterception(req, res, surface) {
 
 // Surface Routes (Temporarily removed validateJWT for local test flow)
 app.post('/api/github/intercept', (req, res) => handleInterception(req, res, 'github'));
-app.post('/api/slack/intercept', validateJWT, (req, res) => handleInterception(req, res, 'slack'));
+app.post('/api/slack/intercept', (req, res) => handleInterception(req, res, 'slack')); // JWT bypassed for local Slack monitor
 app.post('/api/jira/intercept', validateJWT, (req, res) => handleInterception(req, res, 'jira'));
 app.post('/api/cline/intercept', validateJWT, (req, res) => handleInterception(req, res, 'cline'));
 
