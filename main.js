@@ -245,15 +245,13 @@ ipcMain.handle('slack-stop-monitor', async () => {
     return { status: 'stopped' };
 });
 
-// 13. Slack Disconnect
+// 13. Slack Disconnect — stops monitor but keeps token so reconnect is instant
 ipcMain.handle('slack-disconnect', async () => {
     if (slackMonitorProcess && !slackMonitorProcess.killed) {
         slackMonitorProcess.kill();
         slackMonitorProcess = null;
     }
     slackMonitorInterval = null;
-    const tokenPath = getPraesidiaPath('slack_tokens.json');
-    if (fs.existsSync(tokenPath)) fs.unlinkSync(tokenPath);
     return { status: 'disconnected' };
 });
 
